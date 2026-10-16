@@ -40,4 +40,13 @@ jobs:
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:python"
-          upload: ${{ github.actor != 'dependabot[bot]' }}
+          upload: false
+          output: results
+
+      - name: Archive CodeQL SARIF Report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: codeql-python-sarif
+          path: results
+          if-no-files-found: ignore
