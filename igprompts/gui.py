@@ -323,8 +323,18 @@ class IGPromptsGUI:
         self.txt_sched_preview.pack(fill="both", expand=True, pady=6)
 
     def _log(self, msg: str) -> None:
-        self.txt_log.insert(tk.END, msg + "\n")
-        self.txt_log.see(tk.END)
+        def append() -> None:
+            try:
+                if hasattr(self, "txt_log") and self.txt_log.winfo_exists():
+                    self.txt_log.insert(tk.END, msg + "\n")
+                    self.txt_log.see(tk.END)
+            except Exception:
+                pass
+        try:
+            if hasattr(self, "root") and self.root.winfo_exists():
+                self.root.after(0, append)
+        except Exception:
+            pass
 
     def _start_run_thread(self) -> None:
         if not self.var_faceless.get() and not self.var_reels.get():
@@ -387,7 +397,17 @@ class IGPromptsGUI:
         except Exception as exc:
             self._log(f"❌ 錯誤: {exc}")
         finally:
-            self.btn_run.config(state="normal")
+            def restore() -> None:
+                try:
+                    if hasattr(self, "btn_run") and self.btn_run.winfo_exists():
+                        self.btn_run.config(state="normal")
+                except Exception:
+                    pass
+            try:
+                if hasattr(self, "root") and self.root.winfo_exists():
+                    self.root.after(0, restore)
+            except Exception:
+                pass
 
     def _export_calendar(self, fmt: str) -> None:
         try:

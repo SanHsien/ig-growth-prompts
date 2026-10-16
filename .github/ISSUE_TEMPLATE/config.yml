@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 安全漏洞私密通報 (Security Advisory)
+    url: https://github.com/SanHsien/ig-growth-prompts/security/advisories/new
+    about: 若發現任何潛在的安全漏洞或憑證洩漏疑慮，請透過私密管道回報，切勿開啟公開 Issue。

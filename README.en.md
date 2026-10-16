@@ -1,8 +1,45 @@
-English | [中文版](README.md)
+<div align="center">
+  <h1>🎯 Instagram Growth & Faceless Content Prompt Framework</h1>
+  <p><strong>Full-Lifecycle IG Algorithmic Growth Prompts & Automation Toolkit (Unified 01-12, Python Stdlib Workflow, Standalone GUI, Calendar & Batch Runner)</strong></p>
 
-# Instagram Growth & Faceless Content Prompt Framework (IG Growth Prompts)
+  <p>
+    <a href="https://github.com/SanHsien/ig-growth-prompts/releases">
+      <img src="https://img.shields.io/github/v/release/SanHsien/ig-growth-prompts?color=blue&style=flat-square" alt="GitHub Release">
+    </a>
+    <a href="https://github.com/SanHsien/ig-growth-prompts">
+      <img src="https://img.shields.io/badge/Version-0.6.0-blue?style=flat-square" alt="Version">
+    </a>
+    <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
+    <img src="https://img.shields.io/badge/Dependencies-Zero%20(stdlib--only)-success?style=flat-square" alt="Zero Dependencies">
+    <a href="https://github.com/SanHsien/ig-growth-prompts/actions/workflows/ci.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/SanHsien/ig-growth-prompts/ci.yml?branch=main&label=CI&style=flat-square" alt="CI Status">
+    </a>
+    <a href="https://github.com/SanHsien/ig-growth-prompts/actions/workflows/codeql.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/SanHsien/ig-growth-prompts/codeql.yml?branch=main&label=CodeQL&style=flat-square" alt="CodeQL Status">
+    </a>
+    <a href="./LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
+    </a>
+  </p>
 
-This repository curates and systematically deconstructs the Instagram growth systems originally shared by creator `@jasonxtsai` (covering both faceless carousels and short-form video reels). Here, it is abstracted into **12 structured prompt modules with unified IDs (01 ~ 12)**, accompanied by a zero-dependency (Python standard library only) workflow engine, an experiment ledger, and an SVG carousel card renderer.
+  <p>
+    <a href="#key-features">Features</a> •
+    <a href="#prompts-overview-unified-ids-01--12">Prompts (01-12)</a> •
+    <a href="#cli-quickstart">CLI Quickstart</a> •
+    <a href="./ROADMAP.en.md">Roadmap</a> •
+    <a href="./SECURITY.md">Security</a> •
+    <a href="./REVIEW.md">Review</a>
+  </p>
+
+  <p>
+    <a href="./README.md">繁體中文</a> |
+    <strong>English</strong>
+  </p>
+</div>
+
+---
+
+This repository curates and systematically deconstructs the Instagram growth systems originally shared by creator `@jasonxtsai` (covering both faceless carousels and short-form video reels). Here, it is abstracted into **12 structured prompt modules with unified IDs (01 ~ 12)**, accompanied by a zero-dependency (Python standard library only) workflow engine, desktop GUI, multi-platform publishing calendar exporter, batch queue runner, experiment ledger, and SVG carousel card renderer.
 
 > [!IMPORTANT]
 > **Model & Agent Agnostic**
@@ -13,6 +50,9 @@ This repository curates and systematically deconstructs the Instagram growth sys
 ## Key Features
 
 - **Zero Third-Party Dependencies**: The `igprompts` core tool runs entirely on the Python standard library (`stdlib-only`). No `pip install` required.
+- **Standalone Portable & Setup Installer GUI**: Full desktop GUI built with Tkinter, supporting Light, Dark, and Native Windows system theme switching.
+- **Batch Queue & Scheduled Runner**: Run series in sequence or parallel, with support for local background scheduling and GitHub Actions cron automation.
+- **Multi-Platform Publishing Calendar**: Export manifests to Markdown, Notion CSV, Airtable CSV, and Buffer-ready schedules.
 - **12 Structured Prompt Modules with Unified IDs**:
   - **Series 1 (01 ~ 05)**: Faceless & Carousel System (anti-cliché ideation, 15-char hooks, faceless adaptation, greased-chute copy, low-profile authority).
   - **Series 2 (06 ~ 12)**: Short-Form Video & Reels System (7-day topics, 1-3s hooks, retention scripts, viral sharing, data diagnosis, strategic trend jacking, 7-day test matrix).
@@ -22,7 +62,8 @@ This repository curates and systematically deconstructs the Instagram growth sys
   - `dry-run`: Deterministic offline verification with explicit markers (no invented fake content).
 - **Headless Vector SVG Carousel Generator**: Pure Python stdlib generator producing 1080x1350 (Instagram 4:5 vertical) dark-mode vector cards.
 - **7-Day Experiment Ledger & Review Loop**: Prompt 12 generates the plan -> CSV ledger records actual stats -> automated metric calculation -> feeds directly into Prompt 10 for diagnostic rewriting.
-- **Clear Evolution Roadmap**: Documented in [ROADMAP.en.md](ROADMAP.en.md).
+- **Clear Evolution Roadmap & Review**: Documented in [ROADMAP.en.md](ROADMAP.en.md) and [REVIEW.md](REVIEW.md).
+
 
 ---
 

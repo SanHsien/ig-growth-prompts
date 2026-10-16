@@ -1,0 +1,14 @@
+# 關鍵路徑的自動審查指派
+# 規則：最後匹配的一條生效；目錄規則需以 / 結尾。
+
+# 預設：維護者審查
+*                                   @SanHsien
+
+# 核心提示詞庫與工作流引擎
+/prompts/                           @SanHsien
+/igprompts/                         @SanHsien
+/workflow/                          @SanHsien
+
+# 工具與 CI/CD 發布流水線
+/tools/                             @SanHsien
+/.github/workflows/                 @SanHsien

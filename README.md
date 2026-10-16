@@ -1,8 +1,47 @@
-[English](README.en.md) | 中文版
+<div align="center">
+  <h1>🎯 Instagram 爆款與不露臉內容經營 Prompt 框架庫</h1>
+  <p><strong>全流程 IG 演算法成長提示詞與自動化工具箱（跨系列 01-12、純標準庫工作流、免安裝 GUI、內容排程與批次推進）</strong></p>
 
-# Instagram 爆款與不露臉內容經營 Prompt 框架庫 (IG Growth Prompts)
+  <p>
+    <a href="https://github.com/SanHsien/ig-growth-prompts/releases">
+      <img src="https://img.shields.io/github/v/release/SanHsien/ig-growth-prompts?color=blue&style=flat-square" alt="GitHub Release">
+    </a>
+    <a href="https://github.com/SanHsien/ig-growth-prompts">
+      <img src="https://img.shields.io/badge/Version-0.6.0-blue?style=flat-square" alt="Version">
+    </a>
+    <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
+    <img src="https://img.shields.io/badge/Dependencies-Zero%20(stdlib--only)-success?style=flat-square" alt="Zero Dependencies">
+    <a href="https://github.com/SanHsien/ig-growth-prompts/actions/workflows/ci.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/SanHsien/ig-growth-prompts/ci.yml?branch=main&label=CI&style=flat-square" alt="CI Status">
+    </a>
+    <a href="https://github.com/SanHsien/ig-growth-prompts/actions/workflows/codeql.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/SanHsien/ig-growth-prompts/codeql.yml?branch=main&label=CodeQL&style=flat-square" alt="CodeQL Status">
+    </a>
+    <a href="./LICENSE">
+      <img src="https://img.shields.io/badge/License-MIT-green?style=flat-square" alt="License">
+    </a>
+  </p>
 
-本專案收錄並深度拆解社群創作者 `@jasonxtsai` 所分享的 Instagram 爆款成長體系（包含圖文/輪播/不露臉與短影音兩大實戰路徑）。我們將其抽象化為 **12 組全局統一編號（01 ~ 12）** 的結構化 Prompt 模組，並附帶純 Python 標準庫（零第三方依賴）的工作流引擎、7 天測試帳本與 SVG 圖卡排版工具。
+  <p>
+    <a href="#專案特色">專案特色</a> •
+    <a href="#專案目錄結構">專案架構</a> •
+    <a href="#快速上手">快速上手</a> •
+    <a href="#桌面-gui-應用程式免安裝單檔與安裝檔">桌面 GUI</a> •
+    <a href="#排程與批次自動化工作流">排程與批次</a> •
+    <a href="./ROADMAP.md">路線圖</a> •
+    <a href="./SECURITY.md">安全政策</a> •
+    <a href="./REVIEW.md">審查報告</a>
+  </p>
+
+  <p>
+    <strong>繁體中文</strong> |
+    <a href="./README.en.md">English</a>
+  </p>
+</div>
+
+---
+
+本專案收錄並深度拆解社群創作者 `@jasonxtsai` 所分享的 Instagram 爆款成長體系（包含圖文/輪播/不露臉與短影音兩大實戰路徑）。我們將其抽象化為 **12 組全局統一編號（01 ~ 12）** 的結構化 Prompt 模組，並附帶純 Python 標準庫（零第三方依賴）的工作流引擎、排程行事曆生成、多主題桌面 GUI、7 天測試帳本與 SVG 圖卡排版工具。
 
 > [!IMPORTANT]
 > **AI 工具與 Agent 中立（Model & Agent Agnostic）**
@@ -13,6 +52,9 @@
 ## 專案特色
 
 - **零依賴輕量設計**：核心套件 `igprompts` 僅使用 Python 標準函式庫（stdlib-only），無需 `pip install` 任何套件即可直接運作。
+- **免安裝單檔與安裝檔 GUI**：支援獨立 `.exe` 執行檔，內建深色、淺色與跟隨 Windows 系統主題切換。
+- **排程與批次推進引擎**：內建佇列排程工作流，支援本機定時執行與 GitHub Actions cron 定時排程。
+- **多平台發布行事曆匯出**：一鍵將產出轉換為 Markdown、Notion CSV、Airtable CSV 與 Buffer 排程格式。
 - **12 組全局統一編號 Prompt 模組**：
   - **系列 1（01 ~ 05）**：圖文與不露臉精準留存體系（防套路選題、15 字 Hook、不露臉改編、滑梯文案、低調專業定位）。
   - **系列 2（06 ~ 12）**：短影音爆款與假設驗證體系（7 天題目、1~3 秒 Hook、分鏡腳本、轉發動機、數據診斷、策略跟風、7 天測試矩陣）。
@@ -22,7 +64,7 @@
   - `dry-run`：離線驗證，明確標記 `[dry-run]`，絕不捏造假資料。
 - **純本地向量 SVG 圖卡產生器**：零依賴輸出 1080x1350（Instagram 4:5 最佳直式比例）深色主題輪播圖卡集。
 - **7 天測試帳本與復盤閉環**：Prompt 12 規劃測試 -> CSV 帳本填入後台數據 -> 自動計算指標 -> 餵入 Prompt 10 進行診斷與重寫。
-- **演進路線圖**：完整記錄工作流演進藍圖，詳見 [ROADMAP.md](ROADMAP.md)。
+- **演進路線圖與審查報告**：詳見 [ROADMAP.md](ROADMAP.md) 與 [REVIEW.md](REVIEW.md)。
 
 ---
 
@@ -30,25 +72,42 @@
 
 ```
 ig-growth-prompts/
-├── .github/workflows/ci.yml            # 跨平台 CI 工作流程 (Windows + Ubuntu)
+├── .github/
+│   ├── ISSUE_TEMPLATE/                 # GitHub Issue 範本 (Bug, Feature, Config)
+│   ├── workflows/
+│   │   ├── ci.yml                      # 跨平台 CI 測試與品質閘門
+│   │   ├── codeql.yml                  # CodeQL 靜態安全分析掃描
+│   │   ├── batch_schedule.yml          # GitHub Actions 排程定時推進隊列
+│   │   └── release_gui.yml             # 自動化發布與二進位資產構建
+│   ├── CODEOWNERS                      # 程式碼審查所有權設定
+│   ├── dependabot.yml                  # Actions 依賴每週自動檢查
+│   └── PULL_REQUEST_TEMPLATE.md        # PR 提交規範與自我檢查表
 ├── .editorconfig                       # 縮排與編碼規範 (UTF-8, LF)
 ├── .gitattributes                      # Git 換行統一規範 (eol=lf)
 ├── .gitignore                          # Python / IDE 忽略檔案清單
 ├── AGENTS.md                           # AI Agent 規範（單一真相源）
 ├── CLAUDE.md                           # Claude 專屬提示與驗證指引
+├── GEMINI.md                           # Gemini 與通用模型指引
+├── CONTRIBUTING.md                     # 貢獻者指南
 ├── CHANGELOG.md                        # 中文變更紀錄 (Keep a Changelog)
 ├── CHANGELOG.en.md                     # 英文變更紀錄
 ├── LICENSE                             # MIT 授權條款
+├── pyproject.toml                      # PEP 621 標準專案配置與 CLI 入口
 ├── README.md                           # 繁體中文說明文件
 ├── README.en.md                        # 英文說明文件
+├── REVIEW.md                           # 證據式代碼審查報告
 ├── ROADMAP.md                          # 自動化工作流演進路線圖
 ├── ROADMAP.en.md                       # 英文路線圖
+├── SECURITY.md                         # 安全政策與私密漏洞回報機制
 ├── igprompts/                          # 核心 Python 套件 (stdlib-only)
 │   ├── __init__.py
 │   ├── __main__.py
+│   ├── batch.py                        # 佇列排程與批次執行引擎
+│   ├── calendar.py                     # 排程行事曆產生器 (MD, Notion, Airtable, Buffer)
 │   ├── cli.py                          # 命令列介面實作
 │   ├── core.py                         # 模板檢索與變數渲染
 │   ├── experiments.py                  # 7 天測試帳本與復盤分析
+│   ├── gui.py                          # 桌面 Tkinter GUI（深/淺/系統三主題）
 │   ├── models.py                       # 統一 01~12 Prompt 定義
 │   ├── providers.py                    # 工具中立 Provider (Manual, Command, DryRun)
 │   ├── renderer.py                     # 純本地 SVG 4:5 輪播圖卡渲染器
@@ -58,28 +117,40 @@ ig-growth-prompts/
 │   ├── 02-hook-generator.md            # Prompt 02: 15 句 5 大類型開場 Hook 生成器
 │   ├── 03-faceless-formats.md          # Prompt 03: 3 種不露臉高觸及內容改造
 │   ├── 04-retention-optimization.md    # Prompt 04: 留存率、完讀率與互動指標優化
-│   ├── 05-authority-positioning.md     # Prompt 05: 不吹噓的個人品牌專業權威改寫
-│   ├── 06-reels-7day-topics.md         # Prompt 06 (Reels 1): 找出未來 7 天最該拍的題目
-│   ├── 07-reels-top-hooks.md           # Prompt 07 (Reels 2): 找出最強的開場鉤子
-│   ├── 08-reels-retention-script.md    # Prompt 08 (Reels 3): 把題目寫成留得住人的短影音腳本
-│   ├── 09-reels-save-and-share.md      # Prompt 09 (Reels 4): 讓人想收藏，也想傳給朋友
-│   ├── 10-reels-revival.md             # Prompt 10 (Reels 5): 把發過的 Reels 重新救回來
-│   ├── 11-reels-strategic-trends.md    # Prompt 11 (Reels 6): 跟風要跟得有策略
-│   └── 12-reels-seven-day-test-matrix.md # Prompt 12 (Reels 7): 排出你的 7 天測試表
+│   ├── 05-authority-positioning.md     # Prompt 05: 低調建立權威與高信任定位
+│   ├── 06-reels-7day-topics.md         # Prompt 06: 短影音 7 天高穿透選題
+│   ├── 07-reels-top-hooks.md           # Prompt 07: 5 種前 1~3 秒爆款 Hook
+│   ├── 08-reels-retention-script.md    # Prompt 08: 0 秒流失分鏡腳本結構
+│   ├── 09-reels-save-and-share.md      # Prompt 09: 轉發與收藏導向結尾 CTA
+│   ├── 10-reels-revival.md             # Prompt 10: 流量低迷影片數據診斷與復活
+│   ├── 11-reels-strategic-trends.md    # Prompt 11: 策略型跟風與反套路破圈法
+│   └── 12-reels-seven-day-test-matrix.md # Prompt 12: 7 天假設驗證測試矩陣
+├── tools/                              # 工程工具與品質閘門
+│   ├── build_exe.ps1                   # PyInstaller 免安裝單檔與 Inno Setup 建置腳本
+│   ├── dev_check.ps1                   # 完整品質閘門（單測、鏈結、diff 檢查）
+│   └── installer.iss                   # Inno Setup Windows 安裝程式規格
+
 ├── workflow/
 │   └── content_pipeline.md             # 內容生產 SOP 與系統化擴展
 ├── examples/
 │   ├── sample_inputs.json              # 示範輸入參數設定檔 (支援 1~12 題變數)
+│   ├── sample_topics_queue.json        # 批次佇列 JSON 範例
+│   ├── sample_topics_queue.csv         # 批次佇列 CSV 範例
 │   └── sample_slides.md                # 輪播圖卡規格範例
-├── tests/                              # 單元測試套件 (31 個測試全通過)
-│   ├── test_cli.py
-│   ├── test_experiments.py
-│   ├── test_prompts.py
-│   ├── test_renderer.py
-│   └── test_workflow.py
-└── tools/                              # 工程維護與檢測工具
+├── tests/                              # 純標準庫單元測試套件 (49 個測試全綠燈)
+│   ├── test_batch.py                   # 批次佇列排程與執行測試
+│   ├── test_calendar.py                # 發布行事曆多格式匯出測試
+│   ├── test_cli.py                     # CLI 全命令介面測試
+│   ├── test_experiments.py             # 7 天測試帳本與指標試算測試
+│   ├── test_gui.py                     # Tkinter 桌面主題與啟動測試
+│   ├── test_prompts.py                 # 提示詞定義與變數渲染測試
+│   ├── test_renderer.py                # SVG 圖卡向量生成測試
+│   └── test_workflow.py                # 狀態機與中立 Provider 流程測試
+└── tools/                              # 工程維護、自動建置與品質閘門
+    ├── build_exe.ps1                   # PyInstaller 免安裝單檔與 Inno Setup 建置腳本
     ├── check_links.py                  # Markdown 相對連結離線檢查
-    └── dev_check.ps1                   # Windows 原生 Canonical Quality Gate
+    ├── dev_check.ps1                   # Windows 原生 Canonical Quality Gate
+    └── installer.iss                   # Inno Setup Windows 安裝程式規格
 ```
 
 ---

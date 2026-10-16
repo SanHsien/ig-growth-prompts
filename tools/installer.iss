@@ -1,6 +1,8 @@
 ; Inno Setup Script for IG Growth Prompts Workbench
 #define MyAppName "IG Growth Prompts"
-#define MyAppVersion "0.5.0"
+#ifndef MyAppVersion
+#define MyAppVersion "0.6.0"
+#endif
 #define MyAppPublisher "SanHsien"
 #define MyAppURL "https://github.com/SanHsien/ig-growth-prompts"
 #define MyAppExeName "igprompts-gui.exe"
@@ -22,7 +24,6 @@ SolidCompression=yes
 WizardStyle=modern
 
 [Languages]
-Name: "chinesetraditional"; MessagesFile: "compiler:Languages\ChineseTraditional.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
