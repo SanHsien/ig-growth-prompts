@@ -1,7 +1,7 @@
 ; Inno Setup Script for IG Growth Prompts Workbench
 #define MyAppName "IG Growth Prompts"
 #ifndef MyAppVersion
-#define MyAppVersion "0.6.0"
+#define MyAppVersion "0.6.1"
 #endif
 #define MyAppPublisher "SanHsien"
 #define MyAppURL "https://github.com/SanHsien/ig-growth-prompts"

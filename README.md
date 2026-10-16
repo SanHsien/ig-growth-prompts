@@ -7,7 +7,7 @@
       <img src="https://img.shields.io/github/v/release/SanHsien/ig-growth-prompts?color=blue&style=flat-square" alt="GitHub Release">
     </a>
     <a href="https://github.com/SanHsien/ig-growth-prompts">
-      <img src="https://img.shields.io/badge/Version-0.6.0-blue?style=flat-square" alt="Version">
+      <img src="https://img.shields.io/badge/Version-0.6.1-blue?style=flat-square" alt="Version">
     </a>
     <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
     <img src="https://img.shields.io/badge/Dependencies-Zero%20(stdlib--only)-success?style=flat-square" alt="Zero Dependencies">

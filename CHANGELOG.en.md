@@ -5,6 +5,23 @@ English | [中文版](CHANGELOG.md)
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.1] - 2026-10-17
+
+### Changed & Fixed
+
+- **Branch Protection & Exemption Rules**:
+  - Configured `main` branch protection forbidding force-pushes and branch deletions.
+  - Enabled administrator exemption (`enforce_admins: false`) while enforcing required status checks (`Windows gate`, `Ubuntu 3.10`, `Ubuntu 3.13`).
+- **UTF-8 Output Stream Hardening**:
+  - Fixed Windows CI runner `UnicodeEncodeError` when emitting non-ASCII characters.
+  - Injected dynamic UTF-8 stream reconfiguration in `igprompts/cli.py` and set `PYTHONIOENCODING=utf-8` in `dev_check.ps1` and `ci.yml`.
+- **CodeQL Security Scanning Permissions**:
+  - Granted `actions: read` permission in `codeql.yml` to resolve Dependabot PR run retrieval failures.
+- **GitHub Actions Dependencies Upgrade**:
+  - Merged Dependabot PR #1 upgrading actions to latest versions (`actions/checkout`, `actions/setup-python`, `actions/upload-artifact`, `softprops/action-gh-release`).
+- **Community Labels Scaffolding**:
+  - Created missing GitHub repository labels: `dependencies` and `github-actions`.
+
 ## [0.6.0] - 2026-10-17
 
 ### Added

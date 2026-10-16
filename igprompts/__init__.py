@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 from .batch import TopicItem, load_topic_queue, run_batch_queue
 from .calendar import (

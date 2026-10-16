@@ -4,6 +4,23 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，新的在上面。
 
+## [0.6.1] - 2026-10-17
+
+### 變更與修復
+
+- **GitHub 分支保護與例外規則**：
+  - 設定 `main` 分支保護規則（禁止 force push、禁止刪除分支）。
+  - 設定管理者例外豁免權限（`enforce_admins: false`），並配置必要狀態檢查（`Windows gate`, `Ubuntu 3.10`, `Ubuntu 3.13`）。
+- **CI 與終端串流 UTF-8 編碼強化**：
+  - 修復 Windows CI 終端在非 UTF-8 代碼頁下輸出中文字串之 `UnicodeEncodeError`。
+  - 在 `cli.py` 加入動態 `sys.stdout.reconfigure(encoding="utf-8")`，並在 `tools/dev_check.ps1` 與 `ci.yml` 預設注入 `PYTHONIOENCODING=utf-8`。
+- **CodeQL 安全分析工作流程完善**：
+  - 補齊 `codeql.yml` 中的 `actions: read` 權限，避免 Dependabot PR 遭遇權限讀取失敗。
+- **GitHub Actions 依賴升級**：
+  - 合併 Dependabot PR #1，全面升級工作流基礎動作（`actions/checkout`, `actions/setup-python`, `actions/upload-artifact`, `softprops/action-gh-release`）。
+- **社群治理與標籤完備**：
+  - 建立 GitHub 倉庫專用標籤 `dependencies` 與 `github-actions`。
+
 ## [0.6.0] - 2026-10-17
 
 ### 新增
