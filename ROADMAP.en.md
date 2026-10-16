@@ -45,6 +45,13 @@ Users are free to use their preferred AI tools (Claude, ChatGPT, Gemini, DeepSee
   - Scheduled batch queue runner via GitHub Actions cron (`.github/workflows/batch_schedule.yml`)
   - Aggregated multi-channel calendar generation from batch outputs (`calendar generate --from-batch`)
   - (Future Scope) Dispatch notifications via Webhooks (Zapier, Make, n8n)
+       │
+       ▼
+[Phase 6: Desktop GUI & Standalone Installer Distribution] ◀── Implemented (v0.6.0)
+  - Standalone Desktop Workbench (`igprompts/gui.py`): Dark, Light, System native themes
+  - Flexible series execution: run Series 1 (Faceless), Series 2 (Reels), or both concurrently
+  - Semantic Versioning (SemVer) dual distribution: portable standalone (.exe) & Inno Setup installer (.exe)
+  - Automated cloud compiler and release workflow (`.github/workflows/release_gui.yml`)
 ```
 
 ---
@@ -77,3 +84,12 @@ Users are free to use their preferred AI tools (Claude, ChatGPT, Gemini, DeepSee
   - Supports `workflow_dispatch` manual trigger with custom inputs.
   - Generates multi-channel calendar artifacts, posts Markdown summary to `$GITHUB_STEP_SUMMARY`, and uploads job artifacts.
 - **Future Scope**: Webhook endpoints for Zapier / Make / n8n notifications.
+
+### Phase 6: Desktop GUI & Standalone Installer Distribution (Completed v0.6.0)
+- **Modules**: `igprompts/gui.py`, `tools/build_exe.ps1`, `tools/installer.iss`, `.github/workflows/release_gui.yml`
+- **Themes**: Dark, Light, and System (native Windows 11 `AppsUseLightTheme` registry detection).
+- **Execution**: Run Series 1, Series 2, or both concurrently; generate local Windows task scheduler scripts.
+- **SemVer Packaging**:
+  - Portable single-file: `igprompts-gui-vX.Y.Z-portable.exe`
+  - Setup installer: `igprompts-setup-vX.Y.Z.exe` (desktop icon, start menu shortcuts, uninstaller)
+- **Cloud Packaging**: GitHub Actions compiles and uploads dual binaries to GitHub Releases automatically.

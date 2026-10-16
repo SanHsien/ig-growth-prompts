@@ -4,6 +4,25 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，新的在上面。
 
+## [0.6.0] - 2026-10-17
+
+### 新增
+
+- **Phase 6 桌面 GUI 工作台 (`igprompts/gui.py`)**：
+  - 支援「深色」、「淺色」與「跟隨系統」三種主題風格（原生讀取 Windows 11 `AppsUseLightTheme` 登錄表）。
+  - 支援勾選系列 1（圖文不露臉）、系列 2（短影音 Reels）或同時推進兩套工作流。
+  - 內建工作流即時記錄、多渠道日曆一鍵匯出（Notion、Airtable、Buffer、Markdown）與本地排程器腳本產生。
+  - CLI 新增 `python -m igprompts gui` 指令啟動。
+- **語意式版本發布（SemVer）雙模封裝**：
+  - 支援免安裝綠色單檔 `dist/igprompts-gui-v0.6.0-portable.exe`。
+  - 支援 Inno Setup 安裝檔 `dist/igprompts-setup-v0.6.0.exe`（整合 `tools/installer.iss` 與 `tools/build_exe.ps1`）。
+  - 建立 GitHub Actions 雲端自動發布工作流 (`.github/workflows/release_gui.yml`)，自動驗證語意化版本並發布雙模可執行檔。
+- **健全化 Repository 工程架構**：
+  - 建立 `pyproject.toml`（現代 Python 標準封裝，支援 `pip install -e .` 與 `igprompts` 指令列進入點）。
+  - 建立 Windows 原生一鍵安裝與啟動腳本 `install.ps1` 與 POSIX 腳本 `install.sh`。
+  - 補齊社群與工程規範：`CONTRIBUTING.md`、`SECURITY.md`、`GEMINI.md`。
+- **單元測試增至 49 個**：覆蓋 GUI 模組、風格主題切換與系統主題偵測。
+
 ## [0.5.0] - 2026-10-17
 
 ### 新增

@@ -149,6 +149,28 @@ Repository includes [Scheduled Batch Topic Runner](.github/workflows/batch_sched
 - **Manual Trigger**: Supports `workflow_dispatch` with custom queue files (JSON / CSV), provider selection, and calendar options.
 - **Artifacts & Summary**: Publishes visual Markdown calendars directly to `$GITHUB_STEP_SUMMARY` and uploads full output packages (SVG slides, CSV schedules, manifests) as job artifacts.
 
+### 9. Standalone Desktop GUI Workbench (Phase 6)
+Zero-dependency visual application with instant live log, calendar export, and theme switcher:
+```bash
+# Launch GUI from CLI
+python -m igprompts gui
+# Or run one-click setup script
+pwsh -File install.ps1
+```
+- **Three Themes**: "🌙 Dark", "☀️ Light", and "💻 System Default" (natively detects Windows 11 `AppsUseLightTheme` registry).
+- **Execution Flexibility**: Check Series 1 (Faceless), Series 2 (Reels), or run both concurrently.
+- **Local Scheduler**: Tab generates Windows Task Scheduler batch scripts (`.bat`) for automated local runs.
+
+### 10. Portable Binary & Windows Setup Installer (SemVer)
+Dual distribution packages built with Semantic Versioning:
+- **Portable Standalone Executable**: `dist/igprompts-gui-v0.6.0-portable.exe` (run anywhere, no Python required)
+- **Windows Setup Installer**: `dist/igprompts-setup-v0.6.0.exe` (Inno Setup with desktop icons and start menu items)
+- **Local Compiler**:
+  ```powershell
+  pwsh -File tools/build_exe.ps1
+  ```
+- **Cloud Packaging Pipeline**: [Build and Release Windows GUI](.github/workflows/release_gui.yml) automatically builds and publishes release assets on version tags.
+
 ---
 
 ## Local Development & Quality Gates
@@ -159,7 +181,17 @@ All modifications must pass the Windows Canonical Quality Gate:
 pwsh -File tools/dev_check.ps1
 ```
 
-Verification includes 45 unit tests, full Markdown link validation, and git diff whitespace hygiene.
+Verification includes 49 unit tests, full Markdown link validation, and git diff whitespace hygiene.
+
+---
+
+## Project Governance & Documentation
+
+- [Changelog (CHANGELOG.md)](CHANGELOG.md) / [English Changelog](CHANGELOG.en.md)
+- [Roadmap (ROADMAP.md)](ROADMAP.md) / [English Roadmap](ROADMAP.en.md)
+- [Contributing Guide (CONTRIBUTING.md)](CONTRIBUTING.md)
+- [Security Policy (SECURITY.md)](SECURITY.md)
+- [Agent Guidelines (AGENTS.md)](AGENTS.md) / [Claude Guide (CLAUDE.md)](CLAUDE.md) / [Gemini Guide (GEMINI.md)](GEMINI.md)
 
 ---
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 from .batch import TopicItem, load_topic_queue, run_batch_queue
 from .calendar import (
@@ -25,6 +25,7 @@ from .core import (
     render_prompt,
 )
 from .experiments import build_report, load_ledger, write_plan
+from .gui import IGPromptsGUI, launch_gui
 from .models import PromptDefinition
 from .providers import (
     CallableProvider,
@@ -51,6 +52,7 @@ __all__ = [
     "CallableProvider",
     "CommandProvider",
     "DryRunProvider",
+    "IGPromptsGUI",
     "ManualProvider",
     "PromptDefinition",
     "SlideData",
@@ -69,6 +71,7 @@ __all__ = [
     "generate_calendar_from_ledger",
     "generate_calendar_from_workflow_state",
     "get_prompt",
+    "launch_gui",
     "list_prompts",
     "load_ledger",
     "load_topic_queue",

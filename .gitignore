@@ -15,6 +15,16 @@ ENV/
 build/
 dist/
 *.egg-info/
+*.spec
+run_scheduled_pipeline.bat
+
+# Outputs & Artifacts
+gui_output/
+output/
+batch_output/
+calendar_export/
+slides_out/
+run_out/
 
 # IDE & Editor
 .vscode/

@@ -213,6 +213,28 @@ python -m igprompts batch run \
 - **手動觸發**：支援 `workflow_dispatch`，可自由指定隊列檔案路徑（JSON / CSV）、Provider 與是否匯出日曆。
 - **產出封裝**：自動在 GitHub Actions Step Summary 呈現 Markdown 排程表，並將全渠道產出（SVG 圖卡、Notion/Airtable/Buffer CSV、Manifest）打包為 Artifacts 供直接下載。
 
+### 9. 桌面 GUI 工作台與風格主題 (Phase 6)
+純標準庫（零外部依賴）桌面工作台，支援直觀勾選、即時日曆匯出與主題切換：
+```bash
+# 啟動桌面工作台
+python -m igprompts gui
+# 或直接執行一鍵安裝與啟動
+pwsh -File install.ps1
+```
+- **三種 UI 主題**：支援「🌙 深色」、「☀️ 淺色」與「💻 跟隨系統」（原生讀取 Windows 11 `AppsUseLightTheme` 登錄表）。
+- **靈活執行系列**：可個別勾選系列 1（圖文不露臉）、系列 2（短影音 Reels），或兩者同時勾選循序推進。
+- **本機定時排程**：分頁內建「本地排程器」，可一鍵產出 Windows 工作排程器批次檔（`.bat`）。
+
+### 10. 免安裝單檔與 Windows 安裝檔 (SemVer)
+本專案支援語意式版本發布（SemVer）雙模產出：
+- **免安裝綠色單檔**：`dist/igprompts-gui-v0.6.0-portable.exe`（雙擊即開）
+- **Windows Setup 安裝檔**：`dist/igprompts-setup-v0.6.0.exe`（自動建立桌面捷徑與開始功能表）
+- **本機編譯腳本**：
+  ```powershell
+  pwsh -File tools/build_exe.ps1
+  ```
+- **雲端自動發布**：每次發布 tag 或手動觸發時，由 [Build and Release Windows GUI](.github/workflows/release_gui.yml) 自動在 Windows 環境編譯並發布雙模可執行檔至 Releases。
+
 ---
 
 ## 本地開發與驗證閘門
@@ -224,9 +246,19 @@ pwsh -File tools/dev_check.ps1
 ```
 
 執行項目包括：
-1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（45 個單元測試）
+1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（49 個單元測試）
 2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與錨點）
 3. **Git 空白與換行檢查**：`git diff --check`
+
+---
+
+## 專案規範與文件導航
+
+- [變更紀錄 (CHANGELOG.md)](CHANGELOG.md) / [English Changelog](CHANGELOG.en.md)
+- [自動化路線圖 (ROADMAP.md)](ROADMAP.md) / [English Roadmap](ROADMAP.en.md)
+- [社群貢獻規範 (CONTRIBUTING.md)](CONTRIBUTING.md)
+- [安全通報政策 (SECURITY.md)](SECURITY.md)
+- [AI 協作指引 (AGENTS.md)](AGENTS.md) / [Claude 指引 (CLAUDE.md)](CLAUDE.md) / [Gemini 指引 (GEMINI.md)](GEMINI.md)
 
 ---
 

@@ -45,6 +45,13 @@
   - 支援 GitHub Actions Schedule (cron) 自動推進批次隊列 (.github/workflows/batch_schedule.yml)
   - 支援從整個批次輸出直接彙整全渠道發布日曆 (`calendar generate --from-batch`)
   - (未來展望) 支援 Webhook 觸發（如 Zapier / Make / n8n）與社群發布通知
+       │
+       ▼
+[Phase 6: 免安裝桌面 GUI 與雙模安裝檔發布] ◀── 已實作 (v0.6.0)
+  - 桌面工作台 (`igprompts/gui.py`)：三種 UI 主題（深色、淺色、跟隨系統）
+  - 支援單選（系列 1、系列 2）或同時執行兩套，整合本地排程器與日曆匯出
+  - 語意式命名（SemVer）雙模發布：免安裝單檔 (.exe) 與 Inno Setup 安裝檔 (.exe)
+  - GitHub Actions 雲端自動編譯工作流 (`.github/workflows/release_gui.yml`)
 ```
 
 ---
@@ -83,3 +90,13 @@
   - 支援 `workflow_dispatch` 手動觸發並自訂參數（隊列路徑、provider、是否產生發布日曆）。
   - 自動產出多渠道 Content Calendar、輸出 Markdown 執行摘要至 `$GITHUB_STEP_SUMMARY` 並上傳 Artifacts。
 - **未來展望**：支援與 Zapier / Make / n8n 等自動化中樞透過 Webhook 串接。
+
+### Phase 6: 免安裝桌面 GUI 與雙模安裝檔發布 (已完成 v0.6.0)
+- **核心模組**：`igprompts/gui.py`、`tools/build_exe.ps1`、`tools/installer.iss`、`.github/workflows/release_gui.yml`
+- **特點**：
+  - **三種風格主題**：深色（Dark）、淺色（Light）、跟隨系統（原生讀取 Windows 11 `AppsUseLightTheme` 登錄表）。
+  - **靈活執行系列**：可單選系列 1（圖文不露臉）、單選系列 2（短影音 Reels）、或兩者同時勾選循序推進。
+  - **語意式版本發布（SemVer）**：
+    - 免安裝單檔：`igprompts-gui-vX.Y.Z-portable.exe`
+    - Setup 安裝檔：`igprompts-setup-vX.Y.Z.exe`（整合 Inno Setup，支援桌面捷徑與開始功能表）
+  - **雲端自動編譯工作流**：每次發布 tag 或手動觸發時，由 GitHub Actions 在 Windows 環境編譯並上傳 Release Assets。

@@ -164,6 +164,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_batch_run.add_argument("--provider", "-p", choices=["dry-run", "manual", "command"], default="dry-run")
     p_batch_run.add_argument("--cmd", type=str, help="Command for --provider command.")
 
+    # gui (Phase 6)
+    sub.add_parser("gui", help="Phase 6: Launch desktop GUI workbench.")
+
     return parser
 
 
@@ -348,6 +351,10 @@ def main(argv: list[str] | None = None) -> int:
             return _cmd_calendar(args)
         if args.command == "batch":
             return _cmd_batch(args)
+        if args.command == "gui":
+            from .gui import launch_gui
+            launch_gui()
+            return 0
     except Exception as exc:
         sys.stderr.write(f"Error: {exc}\n")
         return 1

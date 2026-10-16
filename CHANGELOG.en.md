@@ -5,6 +5,25 @@ English | [中文版](CHANGELOG.md)
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.0] - 2026-10-17
+
+### Added
+
+- **Phase 6 Desktop GUI Workbench (`igprompts/gui.py`)**:
+  - Three UI themes: Dark, Light, and System (natively detects Windows 11 `AppsUseLightTheme` registry setting).
+  - Flexible series selection: run Series 1 (Faceless), Series 2 (Reels), or both concurrently.
+  - Live execution logging, one-click multi-channel calendar export (Notion, Airtable, Buffer, Markdown), and Windows Task Scheduler batch generator.
+  - Launchable via CLI: `python -m igprompts gui`.
+- **Dual SemVer Distribution Packages**:
+  - Standalone portable binary: `dist/igprompts-gui-v0.6.0-portable.exe`.
+  - Windows Setup installer: `dist/igprompts-setup-v0.6.0.exe` (powered by Inno Setup in `tools/installer.iss` and `tools/build_exe.ps1`).
+  - Automated GitHub Actions release pipeline (`.github/workflows/release_gui.yml`) with strict semantic version verification.
+- **Repository Architecture Governance**:
+  - Added standard `pyproject.toml` supporting `pip install -e .` and console entry point `igprompts`.
+  - Added Windows native setup script `install.ps1` and POSIX setup script `install.sh`.
+  - Added community and agent governance files: `CONTRIBUTING.md`, `SECURITY.md`, and `GEMINI.md`.
+- **Unit Tests Expanded to 49 Tests**: Full test suite covering GUI themes, registry detection fallback, and CLI commands.
+
 ## [0.5.0] - 2026-10-17
 
 ### Added
