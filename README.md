@@ -188,6 +188,13 @@ python -m igprompts calendar generate \
   --from-ledger ledger.csv \
   --format notion \
   -o notion.csv
+
+# 匯整整個批次目錄中所有主題，自動間隔排程產生日曆
+python -m igprompts calendar generate \
+  --from-batch batch_output \
+  --interval 2 \
+  --format all \
+  -o calendar_export
 ```
 
 ### 7. 主題庫批次執行 (Phase 4)
@@ -200,6 +207,12 @@ python -m igprompts batch run \
   -o batch_output
 ```
 
+### 8. GitHub Actions 定時排程與自動派工 (Phase 5)
+倉庫內建 [Scheduled Batch Topic Runner](.github/workflows/batch_schedule.yml)：
+- **定時推進**：每日 UTC 02:00（台灣時間 10:00）自動執行主題隊列並匯整發布日曆。
+- **手動觸發**：支援 `workflow_dispatch`，可自由指定隊列檔案路徑（JSON / CSV）、Provider 與是否匯出日曆。
+- **產出封裝**：自動在 GitHub Actions Step Summary 呈現 Markdown 排程表，並將全渠道產出（SVG 圖卡、Notion/Airtable/Buffer CSV、Manifest）打包為 Artifacts 供直接下載。
+
 ---
 
 ## 本地開發與驗證閘門
@@ -211,7 +224,7 @@ pwsh -File tools/dev_check.ps1
 ```
 
 執行項目包括：
-1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（43 個單元測試）
+1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（45 個單元測試）
 2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與錨點）
 3. **Git 空白與換行檢查**：`git diff --check`
 

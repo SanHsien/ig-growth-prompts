@@ -5,6 +5,19 @@ English | [中文版](CHANGELOG.md)
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.5.0] - 2026-10-17
+
+### Added
+
+- **Phase 5 Scheduled Batch Automation via GitHub Actions (`.github/workflows/batch_schedule.yml`)**:
+  - Automatically runs topic queues on a daily cron schedule (`0 2 * * *`).
+  - Supports `workflow_dispatch` manual trigger with custom inputs.
+  - Generates multi-channel calendar artifacts, posts Markdown summary to `$GITHUB_STEP_SUMMARY`, and uploads job artifacts.
+- **Aggregated Batch Calendar Generation (`generate_calendar_from_batch_dir`)**:
+  - Scans all `workflow_state.json` checkpoints within a batch run directory and schedules items at custom intervals.
+  - Extended CLI support via `calendar generate --from-batch <dir> --interval <days>`.
+- **Unit Tests Expanded to 45 Tests**: Added coverage for batch calendar aggregation and CLI integration.
+
 ## [0.4.0] - 2026-10-17
 
 ### Added

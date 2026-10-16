@@ -1,0 +1,80 @@
+name: Scheduled Batch Topic Runner
+
+on:
+  schedule:
+    # Runs everyday at 02:00 UTC (10:00 AM UTC+8)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      queue_file:
+        description: 'Path to topics queue file (JSON or CSV)'
+        required: true
+        default: 'examples/sample_topics_queue.json'
+      provider:
+        description: 'Workflow provider (dry-run, manual, command)'
+        required: true
+        default: 'dry-run'
+      generate_calendar:
+        description: 'Generate multi-channel content calendar from batch outputs'
+        type: boolean
+        required: true
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  run-batch:
+    name: Execute Topic Queue
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Run batch queue
+        id: batch
+        env:
+          QUEUE_FILE: ${{ github.event.inputs.queue_file || 'examples/sample_topics_queue.json' }}
+          PROVIDER: ${{ github.event.inputs.provider || 'dry-run' }}
+        run: |
+          mkdir -p output/batch_output
+          python -m igprompts batch run \
+            -f "$QUEUE_FILE" \
+            --provider "$PROVIDER" \
+            -o output/batch_output
+
+      - name: Generate Content Calendar
+        id: calendar
+        if: ${{ github.event.inputs.generate_calendar != 'false' }}
+        run: |
+          mkdir -p output/calendar_export
+          python -m igprompts calendar generate \
+            --from-batch output/batch_output \
+            --format all \
+            -o output/calendar_export
+
+      - name: Generate Job Summary
+        run: |
+          echo "## 🚀 Scheduled Batch Topic Queue Execution" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger**: \`${{ github.event_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Queue File**: \`${{ github.event.inputs.queue_file || 'examples/sample_topics_queue.json' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Provider**: \`${{ github.event.inputs.provider || 'dry-run' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [ -f output/calendar_export/content_calendar.md ]; then
+            echo "### 📅 Generated Content Calendar" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat output/calendar_export/content_calendar.md >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Output Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-topic-outputs
+          path: output/
+          retention-days: 7

@@ -115,6 +115,38 @@ def generate_calendar_from_workflow_state(
     ]
 
 
+def generate_calendar_from_batch_dir(
+    batch_dir: str | Path,
+    start_date: str | date,
+    default_time: str = "19:00",
+    interval_days: int = 1,
+) -> list[CalendarEntry]:
+    """Scan all workflow_state.json files in batch output subdirectories and build a scheduled calendar."""
+    p = Path(batch_dir)
+    if not p.exists():
+        raise FileNotFoundError(f"Batch directory not found: {p}")
+
+    state_files = sorted(p.glob("*/workflow_state.json"))
+    if not state_files:
+        raise ValueError(f"No workflow_state.json found in {p}")
+
+    if isinstance(start_date, str):
+        curr_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+    else:
+        curr_date = start_date
+
+    entries: list[CalendarEntry] = []
+    for idx, sf in enumerate(state_files):
+        entry_date = curr_date + timedelta(days=idx * interval_days)
+        state = WorkflowState.load_checkpoint(sf)
+        item_entries = generate_calendar_from_workflow_state(state, entry_date, default_time=default_time)
+        for item in item_entries:
+            item.entry_id = f"BATCH-{(idx + 1):02d}"
+            entries.append(item)
+    return entries
+
+
+
 # ============================================================================
 # Exporters (Notion, Airtable, Buffer, Markdown)
 # ============================================================================

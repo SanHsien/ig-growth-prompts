@@ -16,6 +16,7 @@ from .calendar import (
     export_buffer_csv,
     export_markdown_calendar,
     export_notion_csv,
+    generate_calendar_from_batch_dir,
     generate_calendar_from_ledger,
     generate_calendar_from_workflow_state,
 )
@@ -147,6 +148,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_cal_gen = cal_sub.add_parser("generate", help="Generate content calendar from ledger or workflow state.")
     p_cal_gen.add_argument("--from-ledger", type=str, help="Path to 7-day test ledger CSV.")
     p_cal_gen.add_argument("--from-state", type=str, help="Path to workflow_state.json.")
+    p_cal_gen.add_argument("--from-batch", type=str, help="Path to batch output directory containing workflow_state.json files.")
+    p_cal_gen.add_argument("--interval", type=int, default=1, help="Interval days between posts for batch calendar (default: 1).")
     p_cal_gen.add_argument("--start-date", type=str, default=date.today().isoformat(), help="Start date (YYYY-MM-DD).")
     p_cal_gen.add_argument("--format", choices=["notion", "airtable", "buffer", "markdown", "all"], default="all")
     p_cal_gen.add_argument("--output", "-o", dest="output_target", type=str, default="calendar_export",
@@ -245,8 +248,14 @@ def _cmd_calendar(args: argparse.Namespace) -> int:
         elif args.from_state:
             state = WorkflowState.load_checkpoint(args.from_state)
             entries = generate_calendar_from_workflow_state(state, start_date=args.start_date)
+        elif args.from_batch:
+            entries = generate_calendar_from_batch_dir(
+                args.from_batch,
+                start_date=args.start_date,
+                interval_days=args.interval,
+            )
         else:
-            raise ValueError("Specify either --from-ledger or --from-state.")
+            raise ValueError("Specify either --from-ledger, --from-state, or --from-batch.")
 
         target = Path(args.output_target)
         is_file = target.suffix.lower() in (".csv", ".md")

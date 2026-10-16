@@ -4,6 +4,19 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，新的在上面。
 
+## [0.5.0] - 2026-10-17
+
+### 新增
+
+- **Phase 5 GitHub Actions 定時自動推進隊列 (`.github/workflows/batch_schedule.yml`)**：
+  - 支援每天 UTC 02:00（台灣時間 10:00）由 GitHub Actions 排程定時執行主題隊列。
+  - 支援 `workflow_dispatch` 手動觸發，自選隊列檔案、Provider 與日曆生成選項。
+  - 自動生成全渠道日曆，輸出排程表格至 `$GITHUB_STEP_SUMMARY`，並打包輸出為 Artifacts。
+- **批次發布日曆彙整功能 (`generate_calendar_from_batch_dir`)**：
+  - 支援掃描批次執行目錄下的所有 `workflow_state.json`，依間隔天數自動排定發布日期並彙整為單一日曆。
+  - CLI 擴展支援 `calendar generate --from-batch <dir> --interval <days>`。
+- **單元測試增至 45 個**：涵蓋 `--from-batch` 日曆彙整與 CLI 測試。
+
 ## [0.4.0] - 2026-10-17
 
 ### 新增

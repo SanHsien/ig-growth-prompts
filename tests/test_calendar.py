@@ -7,16 +7,19 @@ import unittest
 from datetime import date
 from pathlib import Path
 
+from igprompts.batch import TopicItem, run_batch_queue
 from igprompts.calendar import (
     CalendarEntry,
     export_airtable_csv,
     export_buffer_csv,
     export_markdown_calendar,
     export_notion_csv,
+    generate_calendar_from_batch_dir,
     generate_calendar_from_ledger,
     generate_calendar_from_workflow_state,
 )
 from igprompts.experiments import load_ledger, write_plan
+from igprompts.providers import DryRunProvider
 from igprompts.workflow import StepRecord, WorkflowState
 
 
@@ -122,6 +125,20 @@ class TestCalendar(unittest.TestCase):
             self.assertTrue(out_file.exists())
             self.assertIn("# 內容發布日曆", doc)
             self.assertIn("| `EXP-01` | 2026-11-01 | 18:30 | IG Carousel |", doc)
+
+    def test_generate_from_batch_dir(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            items = [
+                TopicItem(id="01", topic="批次主題一", niche="測試賽道", series="faceless_carousel"),
+                TopicItem(id="02", topic="批次主題二", niche="測試賽道", series="short_video_reels"),
+            ]
+            run_batch_queue(items, tmp_dir, provider=DryRunProvider())
+            entries = generate_calendar_from_batch_dir(tmp_dir, start_date="2026-11-10", interval_days=2)
+            self.assertEqual(len(entries), 2)
+            self.assertEqual(entries[0].entry_id, "BATCH-01")
+            self.assertEqual(entries[0].scheduled_date, "2026-11-10")
+            self.assertEqual(entries[1].entry_id, "BATCH-02")
+            self.assertEqual(entries[1].scheduled_date, "2026-11-12")
 
 
 if __name__ == "__main__":

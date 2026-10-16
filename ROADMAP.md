@@ -41,9 +41,10 @@
   - 主題庫隊列批次處理器 (`igprompts/batch.py`)：支援 JSON / CSV 隊列批量推進
        │
        ▼
-[Phase 5: 雲端排程與 Webhook 生態整合] (未來展望)
-  - 支援 GitHub Actions Schedule (cron) 自動推進批次隊列
-  - 支援 Webhook 觸發（如 Zapier / Make / n8n）與社群發布通知
+[Phase 5: 雲端排程與 Webhook 生態整合] ◀── 部分實作 (v0.5.0)
+  - 支援 GitHub Actions Schedule (cron) 自動推進批次隊列 (.github/workflows/batch_schedule.yml)
+  - 支援從整個批次輸出直接彙整全渠道發布日曆 (`calendar generate --from-batch`)
+  - (未來展望) 支援 Webhook 觸發（如 Zapier / Make / n8n）與社群發布通知
 ```
 
 ---
@@ -73,9 +74,12 @@
 ### Phase 4: 多渠道發布與主題庫批次執行 (已完成 v0.4.0)
 - **核心模組**：`igprompts/calendar.py`、`igprompts/batch.py`
 - **特點**：
-  - **多渠道發布日曆**：可由 7 天測試帳本（Prompt 12）或工作流狀態直接衍生發布日曆，支援匯出 Notion Database、Airtable Content Calendar、Buffer 排程 CSV 及 Markdown 表格。
+  - **多渠道發布日曆**：可由 7 天測試帳本（Prompt 12）、單一工作流狀態或批次目錄直接衍生發布日曆，支援匯出 Notion Database、Airtable Content Calendar、Buffer 排程 CSV 及 Markdown 表格。
   - **主題庫批次推進**：可讀取 JSON 或 CSV 主題清單（`examples/sample_topics_queue.json`、`sample_topics_queue.csv`），依所屬系列自動批次執行管線並分別留存檢查點與清單。
 
-### Phase 5: 雲端排程與 Webhook 整合 (未來展望)
-- 支援 GitHub Actions Schedule (cron) 定時推進隊列。
-- 支援與 Zapier / Make / n8n 等自動化中樞透過 Webhook 串接。
+### Phase 5: 雲端排程與 Webhook 整合 (v0.5.0 部分完成)
+- **GitHub Actions 定時排程 (`.github/workflows/batch_schedule.yml`)**：
+  - 支援 `schedule: cron` 每日定時自動執行批次隊列。
+  - 支援 `workflow_dispatch` 手動觸發並自訂參數（隊列路徑、provider、是否產生發布日曆）。
+  - 自動產出多渠道 Content Calendar、輸出 Markdown 執行摘要至 `$GITHUB_STEP_SUMMARY` 並上傳 Artifacts。
+- **未來展望**：支援與 Zapier / Make / n8n 等自動化中樞透過 Webhook 串接。

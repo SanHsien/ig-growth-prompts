@@ -151,6 +151,27 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(code_batch, 0)
             self.assertTrue((batch_out / "B01_faceless_carousel" / "pipeline_manifest.md").exists())
 
+    def test_cli_calendar_from_batch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            queue_file = Path(tmp_dir) / "queue.json"
+            queue_file.write_text(json.dumps([
+                {"id": "B01", "topic": "主題一", "niche": "賽道", "series": "faceless"}
+            ]), encoding="utf-8")
+
+            batch_out = Path(tmp_dir) / "batch_out"
+            self.assertEqual(main(["batch", "run", "-f", str(queue_file), "-o", str(batch_out)]), 0)
+
+            cal_out = Path(tmp_dir) / "cal_export"
+            code_cal = main([
+                "calendar",
+                "generate",
+                "--from-batch", str(batch_out),
+                "--format", "markdown",
+                "-o", str(cal_out / "calendar.md"),
+            ])
+            self.assertEqual(code_cal, 0)
+            self.assertTrue((cal_out / "calendar.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

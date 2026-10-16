@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 from .batch import TopicItem, load_topic_queue, run_batch_queue
 from .calendar import (
@@ -11,6 +11,7 @@ from .calendar import (
     export_buffer_csv,
     export_markdown_calendar,
     export_notion_csv,
+    generate_calendar_from_batch_dir,
     generate_calendar_from_ledger,
     generate_calendar_from_workflow_state,
 )
@@ -64,6 +65,7 @@ __all__ = [
     "export_buffer_csv",
     "export_markdown_calendar",
     "export_notion_csv",
+    "generate_calendar_from_batch_dir",
     "generate_calendar_from_ledger",
     "generate_calendar_from_workflow_state",
     "get_prompt",

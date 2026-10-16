@@ -125,6 +125,13 @@ python -m igprompts calendar generate \
   --from-ledger ledger.csv \
   --format notion \
   -o notion.csv
+
+# Aggregate all batch outputs into a single staggered content calendar
+python -m igprompts calendar generate \
+  --from-batch batch_output \
+  --interval 2 \
+  --format all \
+  -o calendar_export
 ```
 
 ### 7. Batch Topic Queue Runner (Phase 4)
@@ -136,6 +143,12 @@ python -m igprompts batch run \
   -o batch_output
 ```
 
+### 8. GitHub Actions Scheduled Automation (Phase 5)
+Repository includes [Scheduled Batch Topic Runner](.github/workflows/batch_schedule.yml):
+- **Cron Schedule**: Runs automatically every day at 02:00 UTC (10:00 AM UTC+8) to process queues and build calendars.
+- **Manual Trigger**: Supports `workflow_dispatch` with custom queue files (JSON / CSV), provider selection, and calendar options.
+- **Artifacts & Summary**: Publishes visual Markdown calendars directly to `$GITHUB_STEP_SUMMARY` and uploads full output packages (SVG slides, CSV schedules, manifests) as job artifacts.
+
 ---
 
 ## Local Development & Quality Gates
@@ -146,7 +159,7 @@ All modifications must pass the Windows Canonical Quality Gate:
 pwsh -File tools/dev_check.ps1
 ```
 
-Verification includes 43 unit tests, full Markdown link validation, and git diff whitespace hygiene.
+Verification includes 45 unit tests, full Markdown link validation, and git diff whitespace hygiene.
 
 ---
 

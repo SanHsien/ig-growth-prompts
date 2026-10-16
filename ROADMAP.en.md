@@ -41,9 +41,10 @@ Users are free to use their preferred AI tools (Claude, ChatGPT, Gemini, DeepSee
   - Batch Queue Processor (`igprompts/batch.py`) for sequential JSON / CSV topic pipelines
        │
        ▼
-[Phase 5: Cloud Automation & Webhook Integrations] (Future Scope)
-  - Automated queue runs via GitHub Actions cron schedules
-  - Dispatch notifications via Webhooks (Zapier, Make, n8n)
+[Phase 5: Cloud Automation & Webhook Integrations] ◀── Partially Implemented (v0.5.0)
+  - Scheduled batch queue runner via GitHub Actions cron (`.github/workflows/batch_schedule.yml`)
+  - Aggregated multi-channel calendar generation from batch outputs (`calendar generate --from-batch`)
+  - (Future Scope) Dispatch notifications via Webhooks (Zapier, Make, n8n)
 ```
 
 ---
@@ -70,6 +71,9 @@ Users are free to use their preferred AI tools (Claude, ChatGPT, Gemini, DeepSee
 - **Content Calendar**: Translates 7-day experiment ledgers or completed workflow states into scheduled calendar items, exporting Notion Database CSV, Airtable Content Calendar CSV, Buffer scheduler CSV, and formatted Markdown tables.
 - **Batch Processing**: Reads topic queues from JSON or CSV (`examples/sample_topics_queue.json`, `sample_topics_queue.csv`) and sequentially processes them across series pipelines.
 
-### Phase 5: Cloud Automation & Webhooks (Future Scope)
-- GitHub Actions Scheduled (cron) runner for queue execution.
-- Webhook endpoints for Zapier / Make / n8n triggers.
+### Phase 5: Cloud Automation & Webhooks (Partially Completed v0.5.0)
+- **GitHub Actions Scheduled Runner (`.github/workflows/batch_schedule.yml`)**:
+  - Automatically runs topic queues on a daily cron schedule (`0 2 * * *`).
+  - Supports `workflow_dispatch` manual trigger with custom inputs.
+  - Generates multi-channel calendar artifacts, posts Markdown summary to `$GITHUB_STEP_SUMMARY`, and uploads job artifacts.
+- **Future Scope**: Webhook endpoints for Zapier / Make / n8n notifications.
