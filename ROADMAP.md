@@ -2,63 +2,68 @@
 
 # 自動化工作流演進路線圖 (Workflow Automation Roadmap)
 
-本專案旨在將社群爆款與不露臉 Prompt 體系，進一步演進為一套**純本機、可擴展、可插拔、具備工程治理**的自動化內容生產管線。
+本專案旨在將社群成長體系，演進為一套**工具中立（Model & Agent Agnostic）、純本機、可擴展且具備嚴謹工程治理**的自動化內容生產管線。
+
+不限制使用者使用哪一個 AI 工具：無論你慣用 Claude、ChatGPT、Gemini、DeepSeek、本地 Ollama 還是自建 Agent，所有 Prompt 均為標準化純文字，工作流引擎支援手動交接、命令列管線串接與 Python 函式。
 
 ```
-[原始 Prompts 框架]
+[Prompt 知識庫：全局統一編號 01 ~ 12]
+       │
+       ├─ Series 1: 圖文與不露臉精準留存體系 (Prompts 01 ~ 05)
+       └─ Series 2: 短影音爆款與假設驗證體系 (Prompts 06 ~ 12)
        │
        ▼
-[Phase 1: 工作流狀態機與執行器]  ◀── 本次實作核心
-  - Step-by-step 狀態機 (pending -> running -> completed)
+[Phase 1: 工具中立工作流引擎] ◀── 已實作 (v0.3.0)
+  - 狀態機 (pending -> running -> completed | awaiting_response | failed)
   - 檢查點儲存與斷點續跑 (Checkpoint & Resume)
-  - 可插拔 Provider 介面 (DryRun / Interactive / LLM Protocol)
+  - 多元 Provider 支援：
+    • ManualProvider：輸出 Markdown 檔案，供任何聊天介面複製貼上
+    • CommandProvider：以 stdin/stdout 串接任何本機 CLI (如 ollama, llm, claude)
+    • CallableProvider：串接自訂 Python 函式或 API
+    • DryRunProvider：離線驗證，明確標記 marker，不作假內容
        │
        ▼
-[Phase 2: 純本地視覺/圖卡渲染引擎] ◀── 本次實作核心
-  - 零相依純標準庫 SVG 產生器 (1080x1350 IG 4:5 規格)
-  - 輪播封面、正文頁與 CTA 導流頁排版
+[Phase 2: 純本地圖卡與視覺排版引擎] ◀── 已實作 (v0.3.0)
+  - 零相依純標準庫 SVG 產生器 (1080x1350 Instagram 4:5 規格)
+  - 解析 AI 回覆中的 ```slides 區塊，按規格繪製，無規格時明確認錯
        │
        ▼
-[Phase 3: 批次生成與排程隊列]
-  - 主題庫 (Topic Pool / Queue) 批次讀取
-  - 內容日曆排程自動規劃 (Content Calendar Scheduler)
+[Phase 3: 7 天測試帳本與復盤閉環] ◀── 已實作 (v0.3.0)
+  - Prompt 12 排出測試表 -> `experiment plan` 產生 CSV 帳本
+  - 創作者填入實際後台數據 -> `experiment report` 計算各項指標與排名
+  - 自動生成「可確定的結論」與「數據看不出來的盲點」
+  - 一鍵填入 Prompt 10（復盤與重寫），完成成長閉環
        │
        ▼
-[Phase 4: 多渠道發布與生態整合]
-  - 匯出符合 Buffer / Notion / Airtable 的發布清單
-  - GitHub Actions 定時執行與 Issue/PR 驅動生產
+[Phase 4: 多渠道發布與生態整合] (未來展望)
+  - 匯出 Buffer / Notion / Airtable 的排程資料結構
+  - 支援 GitHub Actions 定時執行或 Webhook 觸發
 ```
 
 ---
 
-## 階段劃分與詳細規劃
+## 階段劃分與最新實作狀態
 
-### Phase 1: 結構化工作流引擎與狀態流轉 (已實作)
-- **目標**：讓 5 步內容生產從「單純複製文字」升級為「具備狀態控制的工程化 Pipeline」。
-- **交付物**：
-  - `igprompts/workflow.py`：
-    - `WorkflowState`：記錄執行階段、輸入變數、各步產出與時間戳記。
-    - `StepRunner`：負責依序或指定步驟執行，支援單步重試。
-    - `WorkflowProvider`：抽象執行層，預設提供免連網的 `DryRunProvider` 及人機互動 `InteractiveProvider`，相容任意自訂函式或 LLM API。
-    - 支援保存 `checkpoint.json` 與斷點續跑（`--resume`）。
+### Phase 1: 工具中立工作流引擎 (已完成)
+- **核心模組**：`igprompts/providers.py`、`igprompts/workflow.py`
+- **特點**：
+  - 徹底消除特定模型綁定。
+  - 支援手動交接模式（`ManualProvider`）：自動在 `handoff/` 產出提示詞與等待回覆檔案，可與任何網頁或 App 協作。
+  - 支援命令列管道模式（`CommandProvider`）：透過 `IGPROMPTS_LLM_CMD` 環境變數或 `--cmd` 參數直接管線呼叫任何終端工具。
 
-### Phase 2: 純本地圖卡與視覺渲染引擎 (已實作)
-- **目標**：解決不露臉內容（輪播貼文）排版繁瑣的問題，達成零外部依賴、純本地一鍵產生可發布視覺素材。
-- **交付物**：
-  - `igprompts/renderer.py`：
-    - 原生生成向量 SVG 格式（1080x1350，Instagram 4:5 直式標準尺寸）。
-    - 支援深色模式、大標題、文字自動換行排版、分頁指示器與結尾 CTA 視覺導流。
-    - CLI 指令 `render-slides` 與 Pipeline 整合，自動輸出至 `slides/` 目錄。
+### Phase 2: 純本地圖卡渲染 (已完成)
+- **核心模組**：`igprompts/renderer.py`
+- **特點**：
+  - 純 Python 標準庫實現，輸出 1080x1350 向量圖卡。
+  - 圖卡內容完全來自 AI 或創作者的真實規格（````slides` 標籤），杜絕假資料。
 
-### Phase 3: 主題庫批次排程與內容日曆 (下一步規劃)
-- **目標**：支援大量選題的批次產出與發布時間分配。
-- **規劃項目**：
-  - `topics.json` 批次隊列解析。
-  - 自動產生每週／每月貼文排程表（Markdown 內容日曆）。
-  - 留存與發布狀態追蹤器。
+### Phase 3: 7 天測試帳本與復盤 (已完成)
+- **核心模組**：`igprompts/experiments.py`
+- **特點**：
+  - 連結 Prompt 12（測試排程）與 Prompt 10（數據診斷與重寫）。
+  - CSV 支援 UTF-8 BOM，在 Windows Excel 中開啟不亂碼。
+  - 空白數據保留為未測（`—`），絕不擅自填 0，維持實證原則。
 
-### Phase 4: 多平台整合與 Webhook 生態 (未來展望)
-- **目標**：無縫串接外部社群管理與筆記工具。
-- **規劃項目**：
-  - Notion Database / Airtable 匯出結構。
-  - Webhook 觸發器與 GitHub Actions 排程定時發布草稿。
+### Phase 4: 多渠道整合與自動化排程 (後續規劃)
+- 輸出 Notion Database、Airtable、Buffer 等排程清單。
+- 支援排程與 Webhook 整合。

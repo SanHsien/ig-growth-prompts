@@ -1,13 +1,51 @@
-"""Zero-dependency SVG card & carousel generator (1080x1350, 4:5 Instagram format)."""
+"""Zero-dependency SVG carousel renderer (1080x1350, Instagram 4:5).
+
+Slide content always comes from a slide spec (AI output or a user file).
+Nothing is hard-coded: if no spec is found, rendering fails loudly.
+
+Slide spec format (Markdown, slides separated by a line with only ``---``)::
+
+    # Cover title
+    body line
+    body line
+
+    ---
+
+    # Second slide title
+    body line
+
+Inside an AI answer the spec must be wrapped in a fenced block tagged ``slides``.
+"""
 
 from __future__ import annotations
 
 import html
+import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
-from .workflow import WorkflowState
+WIDTH = 1080
+HEIGHT = 1350
+MAX_BODY_LINES = 12
+WRAP_WIDTH = 30  # display columns; CJK characters count as 2
+
+SLIDES_FORMAT_ADDENDUM = """【自動化輸出格式（給排版程式讀取）】
+在回答最後，把「版本一：輪播貼文」每一張的畫面文字，用下面格式放進一個標記為 slides 的程式碼區塊：
+```slides
+# 第一張標題
+內文一行
+---
+# 第二張標題
+內文一行
+```
+每張以「# 標題」開頭，張與張之間用單獨一行 --- 分隔，只放畫面上要出現的字。"""
+
+_FENCE_RE = re.compile(r"```slides[ \t]*\r?\n(.*?)\r?\n```", re.DOTALL)
+_SEPARATOR_RE = re.compile(r"^\s*---\s*$", re.MULTILINE)
+
+
+class SlideSpecError(ValueError):
+    """Raised when no usable slide spec is available."""
 
 
 @dataclass
@@ -16,190 +54,146 @@ class SlideData:
     body_lines: list[str]
     page: int
     total: int
-    tag: str = "IG PROMPT FRAMEWORK"
-    is_cover: bool = False
-    is_cta: bool = False
+    tag: str = "IG GROWTH PROMPTS"
+
+    @property
+    def is_cover(self) -> bool:
+        return self.page == 1
+
+    @property
+    def is_last(self) -> bool:
+        return self.page == self.total
 
 
-def _wrap_text(text: str, max_chars: int = 24) -> list[str]:
-    """Simple line-wrapping helper for Chinese & English text."""
+def _display_width(ch: str) -> int:
+    return 2 if ord(ch) > 0x2E7F else 1
+
+
+def wrap_line(text: str, width: int = WRAP_WIDTH) -> list[str]:
+    """Wrap by display width so mixed CJK and Latin text stays inside the card."""
     lines: list[str] = []
-    for raw_line in text.splitlines():
-        raw_line = raw_line.strip()
-        if not raw_line:
-            continue
-        while len(raw_line) > max_chars:
-            lines.append(raw_line[:max_chars])
-            raw_line = raw_line[max_chars:]
-        if raw_line:
-            lines.append(raw_line)
+    current = ""
+    used = 0
+    for ch in text:
+        w = _display_width(ch)
+        if used + w > width and current:
+            lines.append(current.rstrip())
+            current, used = "", 0
+            if ch == " ":
+                continue
+        current += ch
+        used += w
+    if current.strip():
+        lines.append(current.rstrip())
     return lines
 
 
+def extract_slides_block(answer: str) -> str | None:
+    """Return the content of the first ```slides fenced block, if any."""
+    match = _FENCE_RE.search(answer or "")
+    return match.group(1) if match else None
+
+
+def parse_slide_spec(spec: str, tag: str = "IG GROWTH PROMPTS") -> list[SlideData]:
+    """Parse the slide spec format into SlideData objects."""
+    chunks = [c.strip() for c in _SEPARATOR_RE.split(spec or "") if c.strip()]
+    parsed: list[tuple[str, list[str]]] = []
+    for idx, chunk in enumerate(chunks, start=1):
+        raw_lines = [ln.rstrip() for ln in chunk.splitlines()]
+        title_idx = next((i for i, ln in enumerate(raw_lines) if ln.lstrip().startswith("#")), None)
+        if title_idx is None:
+            raise SlideSpecError(f"Slide {idx} has no '# title' line.")
+        title = raw_lines[title_idx].lstrip().lstrip("#").strip()
+        if not title:
+            raise SlideSpecError(f"Slide {idx} has an empty title.")
+        body: list[str] = []
+        for i, ln in enumerate(raw_lines):
+            if i == title_idx:
+                continue
+            body.extend(wrap_line(ln.strip()) if ln.strip() else [""])
+        while body and not body[0]:
+            body.pop(0)
+        while body and not body[-1]:
+            body.pop()
+        if len(body) > MAX_BODY_LINES:
+            raise SlideSpecError(
+                f"Slide {idx} has {len(body)} body lines after wrapping; the limit is {MAX_BODY_LINES}."
+            )
+        parsed.append((title, body))
+
+    if not parsed:
+        raise SlideSpecError("Slide spec is empty.")
+    total = len(parsed)
+    return [
+        SlideData(title=t, body_lines=b, page=i, total=total, tag=tag)
+        for i, (t, b) in enumerate(parsed, start=1)
+    ]
+
+
 def render_svg_card(slide: SlideData) -> str:
-    """Generate a clean, modern, dark-mode SVG card."""
-    width = 1080
-    height = 1350
+    """Render one dark-mode SVG card."""
+    font = "Inter, 'Noto Sans TC', 'Microsoft JhengHei', -apple-system, 'Segoe UI', Roboto, sans-serif"
+    accent = "#38bdf8" if slide.is_cover else ("#ec4899" if slide.is_last else "#818cf8")
+    title_lines = wrap_line(slide.title, 18 if slide.is_cover else 22)
+    title_size = 64 if slide.is_cover else 52
+    title_y = 360 if slide.is_cover else 320
 
-    escaped_title = html.escape(slide.title)
-    escaped_tag = html.escape(slide.tag.upper())
+    title_spans = "\n    ".join(
+        f'<tspan x="120" y="{title_y + i * (title_size + 16)}">{html.escape(t)}</tspan>'
+        for i, t in enumerate(title_lines)
+    )
+    body_y = title_y + len(title_lines) * (title_size + 16) + 60
+    body_spans = "\n    ".join(
+        f'<tspan x="120" y="{body_y + i * 56}">{html.escape(line)}</tspan>'
+        for i, line in enumerate(slide.body_lines)
+        if line
+    )
+    footer_right = "SWIPE ➔" if not slide.is_last else "SAVE ✦"
 
-    # Generate body text spans
-    body_spans: list[str] = []
-    y_start = 580 if slide.is_cover else 500
-    line_height = 54
-
-    for i, line in enumerate(slide.body_lines):
-        y = y_start + (i * line_height)
-        body_spans.append(
-            f'<tspan x="120" y="{y}">{html.escape(line)}</tspan>'
-        )
-    body_markup = "\n        ".join(body_spans)
-
-    accent_color = "#38bdf8" if slide.is_cover else ("#ec4899" if slide.is_cta else "#818cf8")
-    title_size = "64" if slide.is_cover else "52"
-    title_y = "450" if slide.is_cover else "380"
-
-    # Pagination markup
-    pagination = f"{slide.page} / {slide.total}"
-
-    svg = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" width="{width}" height="{height}">
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {WIDTH} {HEIGHT}" width="{WIDTH}" height="{HEIGHT}">
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#0f172a" />
       <stop offset="100%" stop-color="#020617" />
     </linearGradient>
-    <linearGradient id="cardGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8" />
-      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.9" />
-    </linearGradient>
   </defs>
-
-  <!-- Background -->
-  <rect width="{width}" height="{height}" fill="url(#bg)" />
-
-  <!-- Accent top border -->
-  <rect x="0" y="0" width="{width}" height="12" fill="{accent_color}" />
-
-  <!-- Card Container -->
-  <rect x="60" y="80" width="960" height="1190" rx="36" fill="url(#cardGlow)" stroke="#334155" stroke-width="2" />
-
-  <!-- Header: Tag / Branding -->
-  <text x="120" y="180" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="4" fill="{accent_color}">{escaped_tag}</text>
-
-  <!-- Header: Pagination -->
-  <text x="960" y="180" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="24" font-weight="600" fill="#64748b">{pagination}</text>
-
-  <!-- Divider -->
+  <rect width="{WIDTH}" height="{HEIGHT}" fill="url(#bg)" />
+  <rect x="0" y="0" width="{WIDTH}" height="12" fill="{accent}" />
+  <rect x="60" y="80" width="960" height="1190" rx="36" fill="#1e293b" fill-opacity="0.75" stroke="#334155" stroke-width="2" />
+  <text x="120" y="180" font-family="{font}" font-size="24" font-weight="700" letter-spacing="4" fill="{accent}">{html.escape(slide.tag.upper())}</text>
+  <text x="960" y="180" text-anchor="end" font-family="{font}" font-size="24" font-weight="600" fill="#64748b">{slide.page} / {slide.total}</text>
   <line x1="120" y1="220" x2="960" y2="220" stroke="#334155" stroke-width="2" />
-
-  <!-- Title -->
-  <text x="120" y="{title_y}" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="{title_size}" font-weight="800" fill="#f8fafc" letter-spacing="-1">
-    {escaped_title}
+  <text font-family="{font}" font-size="{title_size}" font-weight="800" fill="#f8fafc">
+    {title_spans}
   </text>
-
-  <!-- Body Content -->
-  <text font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="34" font-weight="400" fill="#cbd5e1" line-height="1.6">
-    {body_markup}
+  <text font-family="{font}" font-size="34" font-weight="400" fill="#cbd5e1">
+    {body_spans}
   </text>
-
-  <!-- Footer CTA / Watermark -->
-  <text x="120" y="1200" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="500" fill="#64748b">
-    @SanHsien • IG GROWTH PROMPTS
-  </text>
-  <text x="960" y="1200" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" fill="{accent_color}">
-    SWIPE ➔
-  </text>
+  <text x="960" y="1200" text-anchor="end" font-family="{font}" font-size="22" font-weight="600" fill="{accent}">{footer_right}</text>
 </svg>
 """
-    return svg
 
 
-def generate_carousel_from_workflow(state: WorkflowState, output_dir: str | Path) -> list[Path]:
-    """Extract workflow deliverables and render a complete set of carousel SVGs."""
+def render_slides(slides: list[SlideData], output_dir: str | Path) -> list[Path]:
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
+    files: list[Path] = []
+    for s in slides:
+        path = out / f"slide_{s.page:02d}.svg"
+        path.write_text(render_svg_card(s), encoding="utf-8")
+        files.append(path)
+    return files
 
-    cfg = state.config
-    topic = cfg.get("idea", cfg.get("niche", "Instagram 內容成長指南"))
-    hook = "越努力日更，演算法越容易放棄你。"
 
-    # Check if Step 2 produced a hook
-    s2 = state.steps.get(2)
-    if s2 and s2.output:
-        for line in s2.output.splitlines():
-            if "2. 逆向型：" in line:
-                hook = line.split("2. 逆向型：", 1)[1].split("（")[0].strip()
-                break
+def render_slides_from_spec_file(spec_path: str | Path, output_dir: str | Path) -> list[Path]:
+    text = Path(spec_path).read_text(encoding="utf-8")
+    block = extract_slides_block(text)
+    return render_slides(parse_slide_spec(block if block is not None else text), output_dir)
 
-    slides_spec = [
-        SlideData(
-            title=hook,
-            body_lines=[
-                "很多創作者卡在「每天發文卻沒人看」。",
-                "",
-                "問題不在頻率，而在內容結構。",
-                "這篇拆解高完讀貼文的 3 大關鍵機制。",
-            ],
-            page=1,
-            total=5,
-            is_cover=True,
-        ),
-        SlideData(
-            title="關鍵 1：反套路選題",
-            body_lines=[
-                "讀者每天看到上百篇流水帳。",
-                "",
-                "先列出 7 種大家看膩的廢話套路，",
-                "主動避開它們，你的內容才具備稀缺性。",
-                "新鮮感是手指停住的第一理由。",
-            ],
-            page=2,
-            total=5,
-        ),
-        SlideData(
-            title="關鍵 2：滑梯文案效應",
-            body_lines=[
-                "每行收尾都要勾著讀者讀下一行。",
-                "",
-                "• 刪除軟弱句與冗贅修飾詞",
-                "• 用具體數據代替空泛保證",
-                "• 保留行家講實話的自然節奏",
-            ],
-            page=3,
-            total=5,
-        ),
-        SlideData(
-            title="關鍵 3：不露臉視覺化",
-            body_lines=[
-                "手邊沒有器材，一樣能做出高觸及：",
-                "",
-                "• 純字幕短片（節奏快切）",
-                "• 4:5 輪播圖卡（高收藏複利）",
-                "• 無聲靜態慢動態（聚焦文字）",
-            ],
-            page=4,
-            total=5,
-        ),
-        SlideData(
-            title="結尾行動清單",
-            body_lines=[
-                "打造個人品牌，不靠運氣靠系統。",
-                "",
-                "點擊收藏這組卡片，",
-                "下次產出內容前逐項對照檢查！",
-            ],
-            page=5,
-            total=5,
-            is_cta=True,
-        ),
-    ]
 
-    generated_files: list[Path] = []
-    for s in slides_spec:
-        svg_content = render_svg_card(s)
-        file_path = out / f"slide_{s.page:02d}.svg"
-        file_path.write_text(svg_content, encoding="utf-8")
-        generated_files.append(file_path)
-
-    return generated_files
+def render_slides_from_answer(answer: str, output_dir: str | Path) -> list[Path]:
+    """Render from an AI answer. Raise SlideSpecError when the answer has no slides block."""
+    block = extract_slides_block(answer)
+    if block is None:
+        raise SlideSpecError("The answer has no ```slides block.")
+    return render_slides(parse_slide_spec(block), output_dir)

@@ -9,37 +9,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
-- **Automated Workflow Engine (Phase 1)**:
-  - `igprompts/workflow.py`: `WorkflowState`, `WorkflowRunner`, `DryRunProvider`, `CallableProvider`.
-  - Supports step-level lifecycle tracking (pending, running, completed, failed), checkpoint persistence, and resumption (`--resume`).
-  - Exports `pipeline_manifest.md` and `workflow_state.json`.
-- **Local Vector SVG Carousel Generator (Phase 2)**:
-  - `igprompts/renderer.py`: Zero external dependencies, pure stdlib generation of 1080x1350 (Instagram 4:5 vertical) dark-mode carousel slides.
-- **CLI Enhancements**:
-  - `python -m igprompts run-pipeline`: Execute the 5-step workflow runner with optional `--render-slides` visual output.
-  - `python -m igprompts render-slides`: Generate SVG carousel cards directly from state or config.
-- **Roadmap Documents**: Added bilingual roadmap specifications `ROADMAP.md` and `ROADMAP.en.md`.
-- **Unit Tests Expanded**: Added `tests/test_workflow.py` and `tests/test_renderer.py`, raising test count to 24 tests.
-
-- `igprompts` core package (Python stdlib-only, zero third-party dependencies):
-  - Built-in metadata, variable resolution, and template rendering for 5 core prompts.
-  - End-to-end pipeline synthesis via `pipeline` command.
-- CLI interface:
-  - `python -m igprompts list`: List prompt IDs, keys, titles, and required variables.
-  - `python -m igprompts show <id>`: Inspect raw prompt templates.
-  - `python -m igprompts render <id> [--json-file] [--var key=value]`: Render a customized prompt ready for Claude / ChatGPT.
-  - `python -m igprompts pipeline [--json-file] [-o output.md]`: Export the 5-stage content production pipeline into Markdown.
-- Sample inputs: `examples/sample_inputs.json` featuring an AI & software architecture scenario.
-- Quality gates & developer tools:
-  - `tools/dev_check.ps1`: Windows-native canonical quality check (unit tests, relative link verification, git whitespace checks).
-  - `tools/check_links.py`: Local offline Markdown relative link and image resolver.
-  - `.github/workflows/ci.yml`: Multi-platform CI pipeline (Windows pwsh + Ubuntu Python 3.10 / 3.13 matrix).
-- Complete governance & bilingual documentation:
-  - `AGENTS.md`: Canonical rules and single source of truth for AI agents.
-  - `CLAUDE.md`: Claude-specific guidance and verification protocol.
-  - `README.md` and `README.en.md`: Comprehensive bilingual documentation.
-  - `CHANGELOG.md` and `CHANGELOG.en.md`: Bilingual version changelogs.
-  - `LICENSE`: MIT License.
-  - `.editorconfig` and `.gitattributes`: Strict LF and UTF-8 encoding enforcement across platforms.
-- Test suite:
-  - 15 unit tests covering models, prompt rendering, missing-variable validation, and CLI commands.
+- **Short-Form Video & Reels System (Prompts 06 ~ 12)**:
+  - Curated all 7 short-form video prompts: `06-reels-7day-topics.md` through `12-reels-seven-day-test-matrix.md`.
+  - Covers 7-day topics, 1-3s hooks, retention scripts, viral sharing, data diagnosis, strategic trends, and 7-day test tables.
+- **Unified 01-12 IDs & Model-Agnostic Architecture**:
+  - Unified numbering from 01 to 12 across the entire repository to resolve numbering collisions.
+  - Neutral series identifiers: `faceless_carousel` and `short_video_reels`.
+  - Fully compatible with any user-preferred AI tool (ChatGPT, Claude, Gemini, DeepSeek, Ollama, custom agents).
+- **Pluggable Tool-Agnostic Providers (`igprompts/providers.py`)**:
+  - `ManualProvider`: File-based handoff for any web chat UI, paired with `--resume`.
+  - `CommandProvider`: Stdin/stdout pipe to any local CLI via `--cmd` or `IGPROMPTS_LLM_CMD`.
+  - `DryRunProvider`: Offline verification with clear `[dry-run]` markers (no invented fake content).
+- **7-Day Experiment Ledger & Review Loop (`igprompts/experiments.py`)**:
+  - Pairs Prompt 12 (planning) with Prompt 10 (diagnostic rewriting).
+  - Generates UTF-8 BOM CSV files (Excel on Windows compatible) and calculates rates/rankings.
+  - Automatically exports Markdown reports and formats Prompt 10 inputs.
+- **Spec-Driven Headless SVG Renderer (`igprompts/renderer.py`)**:
+  - Renders directly from explicit ` ```slides ` blocks; fails loudly if no spec is supplied.
+  - Added `examples/sample_slides.md`.
+- **Unit Tests Expanded to 31 Tests**: 100% coverage across core, models, workflow, providers, renderer, experiments, and CLI.

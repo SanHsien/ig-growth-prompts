@@ -2,18 +2,27 @@
 
 # Instagram 爆款與不露臉內容經營 Prompt 框架庫 (IG Growth Prompts)
 
-本專案收錄並深度拆解社群創作者 `@jasonxtsai` 所分享的「Claude IG Prompt 系列」。這套架構將帳號在兩個月內從零拉升至 6 萬追蹤、800 萬次觀看的精華工作流，抽象化為 5 個高度標準化、可隨插即用的 Prompt 模組，並附帶純 Python 標準庫（零第三方依賴）的命令列工具，協助創作者與開發者快速生成個人化的高品質貼文腳本。
+本專案收錄並深度拆解社群創作者 `@jasonxtsai` 所分享的 Instagram 爆款成長體系（包含圖文/輪播/不露臉與短影音兩大實戰路徑）。我們將其抽象化為 **12 組全局統一編號（01 ~ 12）** 的結構化 Prompt 模組，並附帶純 Python 標準庫（零第三方依賴）的工作流引擎、7 天測試帳本與 SVG 圖卡排版工具。
+
+> [!IMPORTANT]
+> **AI 工具與 Agent 中立（Model & Agent Agnostic）**
+> 本專案的所有 Prompt 與自動化工具完全中立，不綁定特定廠商或 Agent。你可以自由搭配手邊最熟練、屬意的任何 AI 工具使用：不論是網頁聊天（Claude, ChatGPT, Gemini, DeepSeek, v0）、本機模型（Ollama, LLaMA）、命令列工具（`llm`, `claude -p`）還是自建的 AI Coding Agent。
 
 ---
 
 ## 專案特色
 
 - **零依賴輕量設計**：核心套件 `igprompts` 僅使用 Python 標準函式庫（stdlib-only），無需 `pip install` 任何套件即可直接運作。
-- **5 大結構化 Prompt 模組**：涵蓋防套路選題、15 句 5 型 Hook、3 種不露臉載體、留存完讀改寫、低調懂行權威感。
-- **自動化工作流引擎（State Machine）**：支援階段執行、檢查點保存（Checkpointing）、斷點續跑（Resume）與自訂 Provider。
+- **12 組全局統一編號 Prompt 模組**：
+  - **系列 1（01 ~ 05）**：圖文與不露臉精準留存體系（防套路選題、15 字 Hook、不露臉改編、滑梯文案、低調專業定位）。
+  - **系列 2（06 ~ 12）**：短影音爆款與假設驗證體系（7 天題目、1~3 秒 Hook、分鏡腳本、轉發動機、數據診斷、策略跟風、7 天測試矩陣）。
+- **靈活可插拔的 Provider**：
+  - `manual`：在 `handoff/` 產出檔案，供任何聊天介面複製貼上，並以 `--resume` 續跑。
+  - `command`：透過標準輸入輸出（stdin/stdout）串接任何本機 CLI 工具（如 `ollama run` 或自訂指令）。
+  - `dry-run`：離線驗證，明確標記 `[dry-run]`，絕不捏造假資料。
 - **純本地向量 SVG 圖卡產生器**：零依賴輸出 1080x1350（Instagram 4:5 最佳直式比例）深色主題輪播圖卡集。
-- **清楚的演進路線圖**：規劃 Phase 1~4 的自動化工作流演進藍圖，詳見 [ROADMAP.md](ROADMAP.md)。
-- **嚴謹工程規範**：包含 Windows 原生品質檢查閘門（`tools/dev_check.ps1`）、Markdown 連結離線檢驗、雙語文件與 GitHub Actions CI。
+- **7 天測試帳本與復盤閉環**：Prompt 12 規劃測試 -> CSV 帳本填入後台數據 -> 自動計算指標 -> 餵入 Prompt 10 進行診斷與重寫。
+- **演進路線圖**：完整記錄工作流演進藍圖，詳見 [ROADMAP.md](ROADMAP.md)。
 
 ---
 
@@ -39,21 +48,32 @@ ig-growth-prompts/
 │   ├── __main__.py
 │   ├── cli.py                          # 命令列介面實作
 │   ├── core.py                         # 模板檢索與變數渲染
-│   ├── models.py                       # Prompt 定義與中繼資料
+│   ├── experiments.py                  # 7 天測試帳本與復盤分析
+│   ├── models.py                       # 統一 01~12 Prompt 定義
+│   ├── providers.py                    # 工具中立 Provider (Manual, Command, DryRun)
 │   ├── renderer.py                     # 純本地 SVG 4:5 輪播圖卡渲染器
-│   └── workflow.py                     # 工作流引擎、狀態機與 Provider
-├── prompts/                            # 5 大核心 Prompt 規格與逐字稿
-│   ├── 01-niche-ideation.md            # Prompt 1: 利基選題與防套路原創發想
-│   ├── 02-hook-generator.md            # Prompt 2: 15 句 5 大類型開場 Hook 生成器
-│   ├── 03-faceless-formats.md          # Prompt 3: 3 種不露臉高觸及內容改造
-│   ├── 04-retention-optimization.md    # Prompt 4: 留存率、完讀率與互動指標優化
-│   └── 05-authority-positioning.md     # Prompt 5: 不吹噓的個人品牌專業權威改寫
+│   └── workflow.py                     # 工作流引擎與狀態機
+├── prompts/                            # 12 大核心 Prompt 規格與逐字稿 (全局統一編號)
+│   ├── 01-niche-ideation.md            # Prompt 01: 利基選題與防套路原創發想
+│   ├── 02-hook-generator.md            # Prompt 02: 15 句 5 大類型開場 Hook 生成器
+│   ├── 03-faceless-formats.md          # Prompt 03: 3 種不露臉高觸及內容改造
+│   ├── 04-retention-optimization.md    # Prompt 04: 留存率、完讀率與互動指標優化
+│   ├── 05-authority-positioning.md     # Prompt 05: 不吹噓的個人品牌專業權威改寫
+│   ├── 06-reels-7day-topics.md         # Prompt 06 (Reels 1): 找出未來 7 天最該拍的題目
+│   ├── 07-reels-top-hooks.md           # Prompt 07 (Reels 2): 找出最強的開場鉤子
+│   ├── 08-reels-retention-script.md    # Prompt 08 (Reels 3): 把題目寫成留得住人的短影音腳本
+│   ├── 09-reels-save-and-share.md      # Prompt 09 (Reels 4): 讓人想收藏，也想傳給朋友
+│   ├── 10-reels-revival.md             # Prompt 10 (Reels 5): 把發過的 Reels 重新救回來
+│   ├── 11-reels-strategic-trends.md    # Prompt 11 (Reels 6): 跟風要跟得有策略
+│   └── 12-reels-seven-day-test-matrix.md # Prompt 12 (Reels 7): 排出你的 7 天測試表
 ├── workflow/
-│   └── content_pipeline.md             # 5 階段自動化內容生產 SOP 與系統化擴展
+│   └── content_pipeline.md             # 內容生產 SOP 與系統化擴展
 ├── examples/
-│   └── sample_inputs.json              # 示範輸入參數設定檔
-├── tests/                              # 單元測試套件
+│   ├── sample_inputs.json              # 示範輸入參數設定檔 (支援 1~12 題變數)
+│   └── sample_slides.md                # 輪播圖卡規格範例
+├── tests/                              # 單元測試套件 (31 個測試全通過)
 │   ├── test_cli.py
+│   ├── test_experiments.py
 │   ├── test_prompts.py
 │   ├── test_renderer.py
 │   └── test_workflow.py
@@ -64,107 +84,94 @@ ig-growth-prompts/
 
 ---
 
-## CLI 工具快速上手
+## 12 組核心 Prompt 總覽
 
-### 1. 列出所有可用的 Prompt 與必要參數
-```bash
-python -m igprompts list
-```
-輸出範例：
-```text
-ID   Key                      Title                          Required Variables
-------------------------------------------------------------------------------------------
-1    niche_ideation           利基市場防套路與原創點子       niche, audience, goal
-2    hook_generator           15 句 5 種類型開場 Hook 生成器 idea, audience, tone
-3    faceless_formats         3 種不露臉高觸及內容改造       idea, audience, goal
-4    retention_optimization   留存率、完讀率與互動指標優化   content, voice, audience
-5    authority_positioning    不吹噓的個人品牌專業權威改寫   content, audience, brand_voice
-```
-
-### 2. 檢視原始 Prompt 模板
-```bash
-python -m igprompts show 1
-```
-
-### 3. 填入變數產生即用 Prompt
-你可以直接在命令列指定變數，或讀取 JSON 設定檔：
-```bash
-# 透過命令行變數生成 Prompt 1
-python -m igprompts render 1 \
-  --var niche="AI 軟體架構" \
-  --var audience="資深工程師與技術主管" \
-  --var goal="建立技術公信力與諮詢漏斗"
-
-# 或從 JSON 設定檔生成
-python -m igprompts render 1 --json-file examples/sample_inputs.json
-```
-
-### 4. 一鍵匯出端到端 5 階段 Pipeline
-```bash
-python -m igprompts pipeline --json-file examples/sample_inputs.json -o pipeline_output.md
-```
-
-### 5. 自動化執行工作流並產生 SVG 圖卡（Phase 1 & 2）
-```bash
-# 執行工作流狀態機，產出 state.json、manifest.md，並生成 4:5 輪播 SVG 圖卡
-python -m igprompts run-pipeline \
-  --json-file examples/sample_inputs.json \
-  --output-dir output_run \
-  --render-slides
-```
-輸出結果：
-- `output_run/workflow_state.json`：包含每一步的狀態、輸入、輸出與時間戳記。
-- `output_run/pipeline_manifest.md`：排版整齊的貼文總結與交付物。
-- `output_run/slides/slide_01.svg` ~ `slide_05.svg`：純本地向量圖卡，可直接在瀏覽器預覽或匯入設計軟體。
-
-### 6. 直接產出 1080x1350 向量輪播圖卡
-```bash
-python -m igprompts render-slides --json-file examples/sample_inputs.json --output-dir my_slides
-```
-
----
-
-## 5 大核心 Prompt 快速檢索
+### 系列 1：圖文與不露臉精準留存體系 (Prompts 01 ~ 05)
 
 | 編號 | 階段定位 | 核心角色 | 關鍵任務 | 詳細規格 |
 |:---|:---|:---|:---|:---|
-| **1** | **選題防套路** | 10 年成長顧問 (帶過 50 個 10 萬粉帳號) | 先列 7 個看膩套路，再給 10 個原創點子，評選前 3 名 | [01-niche-ideation.md](prompts/01-niche-ideation.md) |
-| **2** | **Hook 鉤子** | 爆款文案操盤手 (完播率 +40%) | 輸出 15 句 Hook (懸念/逆向/情緒/數據/內行)，限 15 字，評選最強 5 句 | [02-hook-generator.md](prompts/02-hook-generator.md) |
-| **3** | **不露臉改編** | 不露臉內容操盤師 | 展開為輪播、純字幕 Reel、無聲視覺貼文，附逐幕逐頁文字與視覺配色 | [03-faceless-formats.md](prompts/03-faceless-formats.md) |
-| **4** | **留存率優化** | 留存率優化顧問 | 刪除軟弱句與廢話，每行收尾埋鉤子，拉高完讀、收藏與分享 | [04-retention-optimization.md](prompts/04-retention-optimization.md) |
-| **5** | **權威感定位** | 個人品牌定位顧問 | 去大師腔、不堆砌成績，產出「質感版、俐落版、高級版」懂行者實話 | [05-authority-positioning.md](prompts/05-authority-positioning.md) |
+| **01** | **選題防套路** | 10 年成長顧問 (帶過 50 個帳號) | 先列 7 個看膩套路，再給 10 個原創點子，評選前 3 名 | [01-niche-ideation.md](prompts/01-niche-ideation.md) |
+| **02** | **Hook 鉤子** | 爆款文案操盤手 (完播率 +40%) | 輸出 15 句 Hook (懸念/逆向/情緒/數據/內行)，限 15 字，評選最強 5 句 | [02-hook-generator.md](prompts/02-hook-generator.md) |
+| **03** | **不露臉改編** | 不露臉內容操盤師 | 展開為輪播、純字幕 Reel、無聲視覺貼文，附逐幕逐頁文字與視覺配色 | [03-faceless-formats.md](prompts/03-faceless-formats.md) |
+| **04** | **留存率優化** | 留存率優化顧問 | 刪除軟弱句與廢話，每行收尾埋鉤子，拉高完讀、收藏與分享 | [04-retention-optimization.md](prompts/04-retention-optimization.md) |
+| **05** | **權威感定位** | 個人品牌定位顧問 | 去大師腔、不堆砌成績，產出「質感版、俐落版、高級版」懂行者實話 | [05-authority-positioning.md](prompts/05-authority-positioning.md) |
 
-完整的端到端生產 SOP 請參考 [workflow/content_pipeline.md](workflow/content_pipeline.md)。
+### 系列 2：短影音爆款與假設驗證體系 (Prompts 06 ~ 12)
 
----
-
-## 值得參考的核心思維（Prompt Engineering 視角）
-
-1. **「先破後立」的負面約束（Negative Constraint First）**
-   - 普遍提問直接問「給我 10 個點子」，模型容易產出平庸內容。Prompt 1 先要求「列出 7 種看膩的套路」，讓模型在思考前建立過濾邊界，大幅提升原創度。
-2. **多維度分類矩陣（Categorical Taxonomy）**
-   - Prompt 2 將 Hook 嚴格細分成 5 種類型（懸念／逆向／情緒／數據／內行），避免模型只會產出一種調性的句子，給創作者豐富的 A/B 測試空間。
-3. **消除模型感與爹味（Anti-AI & Anti-Guru Tone）**
-   - 明確加入「要像真人在講話，沒有 AI 味」、「沒有說教感、沒有大師腔、不堆數字秀成績」，精準避開大語言模型容易出現的空泛辭藻與好為人師的口氣。
-4. **輸出即產品（Production-Ready Deliverables）**
-   - 包含畫面逐字稿、視覺搭配建議、Caption、CTA、排名前三理由與改寫對照，所有輸出可直接丟進 Canva、剪映或排程工具中發布。
+| 編號 | 階段定位 | 核心角色 | 關鍵任務 | 詳細規格 |
+|:---|:---|:---|:---|:---|
+| **06** | **7 天選題** | Reels 策略顧問 | 結合粉絲數與階段目標，產生 7 天高需求、原創短影音題目 | [06-reels-7day-topics.md](prompts/06-reels-7day-topics.md) |
+| **07** | **最強開場** | 爆款短影音鉤子文案 | 產出 20 個前 1~3 秒短影音鉤子（涵蓋 8 大機制），評選前 5 名 | [07-reels-top-hooks.md](prompts/07-reels-top-hooks.md) |
+| **08** | **完播腳本** | 完播率腳本編導 | 包含開場、分鏡、口播逐字稿、字卡、切鏡、價值段、秒數標註 | [08-reels-retention-script.md](prompts/08-reels-retention-script.md) |
+| **09** | **裂變轉發** | 社群裂變傳播顧問 | 實用/認同/情緒/意外/解題 5 角度，「傳出去像在幫朋友一個忙」 | [09-reels-save-and-share.md](prompts/09-reels-save-and-share.md) |
+| **10** | **數據復盤** | 數據覆盤與改寫顧問 | 區分確定結論 vs 不亂猜盲點，提煉 Top 3 改善點並重寫腳本 | [10-reels-revival.md](prompts/10-reels-revival.md) |
+| **11** | **策略跟風** | 趨勢策略分析師 | 拆解「機制 ≠ 影片」，移植趨勢機制到垂直領域，排除過度飽和 | [11-reels-strategic-trends.md](prompts/11-reels-strategic-trends.md) |
+| **12** | **測試矩陣** | 成長實驗排程顧問 | 排出 7 天正交差異化測試表，標註驗證假設與監控指標 | [12-reels-seven-day-test-matrix.md](prompts/12-reels-seven-day-test-matrix.md) |
 
 ---
 
-## 我可以仿照做什麼（實踐行動指南）
+## CLI 工具操作指引
 
-### 1. 打造技術／知識型個人的「不露臉」自媒體
-- **工程師／技術人痛點**：不想露臉、沒時間拍片、討厭浮誇行銷。
-- **具體實踐**：
-  - 挑選平日遇到的技術坑、架構決策或開發心得作為素材。
-  - 套用 Prompt 3 生成「輪播圖卡（Code/Architecture Slide）」或「純文字短片」。
-  - 透過 Prompt 5 修飾成低調懂行的語氣，在 Threads、IG、LinkedIn 建立專業形象。
+### 1. 檢索與渲染 Prompt
+```bash
+# 列出全部 12 個 Prompt
+python -m igprompts list
 
-### 2. 結合排程與圖卡渲染打造自動化管線
-- 利用本專案提供的 `igprompts` 模組：
-  - 傳入主題關鍵字或 Note 筆記。
-  - 串接 Playwright 或 Satori 自動將 Prompt 3 的逐頁文字渲染成社群圖卡（SVG / PNG）。
-  - 搭配定時發布工具，達成低維護成本的知識內容輸出。
+# 篩選短影音系列 (Prompts 06-12)
+python -m igprompts list --series reels
+
+# 檢視原始 Prompt 模板
+python -m igprompts show 06
+
+# 填寫變數產出即用文字（可複製到任何 AI 聊天介面）
+python -m igprompts render 06 --json-file examples/sample_inputs.json
+```
+
+### 2. 手動交接模式（與任何 Web AI 協作）
+如果你習慣使用 ChatGPT, Claude.ai, Gemini 或任何網頁聊天工具：
+```bash
+python -m igprompts run-pipeline \
+  --series faceless \
+  --json-file examples/sample_inputs.json \
+  --provider manual \
+  -o my_work
+```
+執行後程式會在 `my_work/handoff/` 產生 `01-niche_ideation.prompt.md`：
+1. 將內容複製貼進你喜愛的 AI 工具中取得回覆。
+2. 將 AI 回覆儲存為 `01-niche_ideation.response.md`。
+3. 再次執行 `python -m igprompts run-pipeline --resume --provider manual -o my_work`，流水線即會讀取回覆並自動推進至下一步！
+
+### 3. 命令列管道模式（串接本機 CLI 或自訂 Agent）
+如果你有安裝本地 LLM 或 CLI 工具（例如 Ollama 或自建指令）：
+```bash
+python -m igprompts run-pipeline \
+  --series faceless \
+  --json-file examples/sample_inputs.json \
+  --provider command \
+  --cmd "ollama run llama3" \
+  -o my_work
+```
+
+### 4. 7 天測試帳本與復盤流程 (Phase 3)
+```bash
+# 步驟 A：依 Prompt 12 規劃產出空的 CSV 帳本
+python -m igprompts experiment plan --csv ledger.csv
+
+# 步驟 B：至 IG 後台將各支影片的真實觀看、收藏、分享數填入 ledger.csv
+
+# 步驟 C：產出分析報告，並自動填入 Prompt 10 的輸入檔案
+python -m igprompts experiment report \
+  --csv ledger.csv \
+  --output report.md \
+  --prompt-out prompt10_input.txt
+```
+直接將 `prompt10_input.txt` 丟給任何 AI，即可立即取得診斷結論與重寫後的全新版本！
+
+### 5. 純本地 1080x1350 輪播圖卡生成
+```bash
+# 從規格檔案生成高品質 SVG 圖卡集
+python -m igprompts render-slides --from examples/sample_slides.md -o slides_out
+```
 
 ---
 
@@ -177,8 +184,8 @@ pwsh -File tools/dev_check.ps1
 ```
 
 執行項目包括：
-1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`
-2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與圖片）
+1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（31 個單元測試）
+2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與錨點）
 3. **Git 空白與換行檢查**：`git diff --check`
 
 ---

@@ -1,4 +1,9 @@
-"""Workflow state machine, execution engine, and pluggable providers."""
+"""Workflow state machine and runner.
+
+Step lifecycle: pending -> running -> completed | awaiting_response | failed.
+``awaiting_response`` means the provider has no answer yet (manual handoff);
+the run stops there and ``--resume`` continues once the answer exists.
+"""
 
 from __future__ import annotations
 
@@ -6,9 +11,13 @@ import json
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
-from .core import get_prompt, list_prompts, render_prompt
+from .core import get_prompt, list_prompts, normalize_series, render_prompt
+from .providers import DryRunProvider, WorkflowProvider
+
+STATE_FILE = "workflow_state.json"
+MANIFEST_FILE = "pipeline_manifest.md"
 
 
 def _utc_now_iso() -> str:
@@ -18,25 +27,30 @@ def _utc_now_iso() -> str:
 @dataclass
 class StepRecord:
     step_id: int
+    key: str
     title: str
+    series_index: int
     prompt_rendered: str = ""
     output: str = ""
-    status: str = "pending"  # pending, running, completed, failed, skipped
+    status: str = "pending"
     started_at: str | None = None
     completed_at: str | None = None
     error: str | None = None
-    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
 class WorkflowState:
+    series: str = "faceless_carousel"
     config: dict[str, Any] = field(default_factory=dict)
     steps: dict[int, StepRecord] = field(default_factory=dict)
+    provider: str = "dry-run"
     created_at: str = field(default_factory=_utc_now_iso)
     updated_at: str = field(default_factory=_utc_now_iso)
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "series": self.series,
+            "provider": self.provider,
             "config": self.config,
             "steps": {str(k): asdict(v) for k, v in self.steps.items()},
             "created_at": self.created_at,
@@ -46,12 +60,13 @@ class WorkflowState:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> WorkflowState:
         state = cls(
+            series=normalize_series(data.get("series", "faceless_carousel")),
             config=data.get("config", {}),
+            provider=data.get("provider", "dry-run"),
             created_at=data.get("created_at", _utc_now_iso()),
             updated_at=data.get("updated_at", _utc_now_iso()),
         )
-        raw_steps = data.get("steps", {})
-        for k, v in raw_steps.items():
+        for k, v in data.get("steps", {}).items():
             state.steps[int(k)] = StepRecord(**v)
         return state
 
@@ -66,182 +81,125 @@ class WorkflowState:
         p = Path(path)
         if not p.exists():
             raise FileNotFoundError(f"Checkpoint file not found: {p}")
-        data = json.loads(p.read_text(encoding="utf-8"))
-        return cls.from_dict(data)
+        return cls.from_dict(json.loads(p.read_text(encoding="utf-8")))
 
-
-class WorkflowProvider:
-    """Base interface for step execution."""
-
-    def execute_step(self, step_id: int, prompt_text: str, state: WorkflowState) -> str:
-        raise NotImplementedError
-
-
-class DryRunProvider(WorkflowProvider):
-    """Deterministic, offline provider for simulation and local verification."""
-
-    def execute_step(self, step_id: int, prompt_text: str, state: WorkflowState) -> str:
-        cfg = state.config
-        niche = cfg.get("niche", "個人品牌")
-        idea = cfg.get("idea", "爆款內容經營")
-
-        if step_id == 1:
-            return (
-                f"【分析利基市場：{niche}】\n"
-                "1. 看膩套路：每日打卡無乾貨、空泛雞湯、流水帳日常、秀存款截圖、無結論說教...\n"
-                f"2. 推薦 Top 3 選題：\n"
-                f"   - 第 1 名：工程師不靠運氣的 3 階段複利系統（主軸：系統化思維，格式：輪播貼文）\n"
-                f"   - 第 2 名：為什麼 90% 認真的人在 IG 做白工？（主軸：認知盲點，格式：純字幕短片）\n"
-                f"   - 第 3 名：零露臉、零剪輯的純文字經營指南（主軸：降摩擦力，格式：無聲圖卡）"
-            )
-        elif step_id == 2:
-            return (
-                f"【15 句爆款 Hook 生成（主題：{idea}）】\n"
-                "1. 懸念型：這 3 個隱藏指標，決定了你的貼文會不會爆。（9字）\n"
-                "2. 逆向型：越努力日更，演算法越容易放棄你。（15字）\n"
-                "3. 情緒型：寫了一整天卻沒人看，問題不在文筆。（15字）\n"
-                "4. 數據型：同一個選題換句開頭，完播率差 40%。（15字）\n"
-                "5. 內行型：高手看 IG 後台，只看收藏與分享率。（15字）\n"
-                "最強 5 句排序推薦已標注理由。"
-            )
-        elif step_id == 3:
-            return (
-                "【3 種不露臉版本完整腳本】\n"
-                "版本一：5 頁輪播貼文（Dark Mode 深色大字、留白、層次分明）\n"
-                "  P1（封面）：越努力日更，演算法越容易放棄你。\n"
-                "  P2（痛點）：盲目日更只會稀釋權重，演算法評估的是完讀率而非頻率。\n"
-                "  P3（解法）：建立滑梯文案結構，每行收尾埋下一個誘因。\n"
-                "  P4（複利）：以高收藏價值為核心，做讀者半年後還能查閱的工具卡。\n"
-                "  P5（CTA）：收藏這張卡片，下次動筆前逐項檢核。\n"
-                "版本二：純字幕 Reel（黑底白字節奏快切）\n"
-                "版本三：無聲極簡圖文"
-            )
-        elif step_id == 4:
-            return (
-                "【留存與完讀率改寫完成】\n"
-                "刪除 6 處軟弱句與開頭廢話，調整行距與節奏，每行結尾加入順承引導詞。\n"
-                "改動清單：\n"
-                "- 原句：「我覺得大家可能在做的時候會有些忽略...」-> 改為「90% 的人忽略了一件事：」\n"
-                "- 原句：「以上就是我想分享的希望有幫助」-> 改為「存下這篇，下次寫文直接套用。」"
-            )
-        elif step_id == 5:
-            return (
-                "【建立權威感 3 版本】\n"
-                "1. 質感版：文字節奏放慢，以真實除錯細節代入，字句留白，散發從容底氣。\n"
-                "2. 俐落版：句子短、動詞主導、直接切中要害，適合 Threads 與快節奏閱讀。\n"
-                "3. 高級版：字字克制，不堆砌數字與光環，用精確的底層原理建立信服感。"
-            )
-        return f"Step {step_id} completed."
-
-
-class CallableProvider(WorkflowProvider):
-    """Provider powered by a custom Python callable."""
-
-    def __init__(self, callback: Callable[[int, str, WorkflowState], str]):
-        self.callback = callback
-
-    def execute_step(self, step_id: int, prompt_text: str, state: WorkflowState) -> str:
-        return self.callback(step_id, prompt_text, state)
+    def step_output(self, step_id: int) -> str:
+        rec = self.steps.get(step_id)
+        return rec.output if rec and rec.status == "completed" else ""
 
 
 class WorkflowRunner:
-    """Executes the pipeline stages, tracks state, and persists artifacts."""
+    """Run one series step by step and persist state after every step."""
 
     def __init__(
         self,
         config: dict[str, Any],
+        series: str = "faceless_carousel",
         provider: WorkflowProvider | None = None,
         state: WorkflowState | None = None,
+        prompt_addenda: dict[int, str] | None = None,
     ):
-        self.config = config
+        self.series = normalize_series(state.series if state else series)
+        self.config = dict(config)
         self.provider = provider or DryRunProvider()
-        self.state = state or WorkflowState(config=config)
+        self.prompt_addenda = prompt_addenda or {}
+        self.state = state or WorkflowState(series=self.series, config=self.config)
+        self.state.provider = self.provider.name
 
-        # Initialize any missing steps
-        for p in list_prompts():
+        for p in list_prompts(self.series):
             if p.id not in self.state.steps:
                 self.state.steps[p.id] = StepRecord(
-                    step_id=p.id,
-                    title=p.title,
+                    step_id=p.id, key=p.key, title=p.title, series_index=p.series_index
                 )
 
     def run_step(self, step_id: int) -> StepRecord:
         definition = get_prompt(step_id)
         record = self.state.steps[step_id]
-
         record.started_at = _utc_now_iso()
         record.status = "running"
         record.error = None
 
         try:
             prompt_text = render_prompt(step_id, self.config, fallback_placeholder=True)
+            addendum = self.prompt_addenda.get(step_id)
+            if addendum:
+                prompt_text = f"{prompt_text}\n\n{addendum}"
             record.prompt_rendered = prompt_text
-            output_text = self.provider.execute_step(step_id, prompt_text, self.state)
-            record.output = output_text
-            record.status = "completed"
-            record.completed_at = _utc_now_iso()
-        except Exception as e:
+            answer = self.provider.execute_step(definition, prompt_text, self.state)
+        except Exception as exc:
             record.status = "failed"
-            record.error = str(e)
+            record.error = str(exc)
             record.completed_at = _utc_now_iso()
             raise
 
+        if answer is None:
+            record.status = "awaiting_response"
+            record.completed_at = None
+        else:
+            record.output = answer
+            record.status = "completed"
+            record.completed_at = _utc_now_iso()
         self.state.updated_at = _utc_now_iso()
         return record
 
-    def run_all(
-        self,
-        start_step: int = 1,
-        end_step: int = 5,
-        checkpoint_path: str | Path | None = None,
-    ) -> WorkflowState:
-        for step_id in range(start_step, end_step + 1):
-            if step_id in self.state.steps and self.state.steps[step_id].status == "completed":
+    def run_all(self, checkpoint_path: str | Path | None = None) -> WorkflowState:
+        """Run pending steps in order. Stop at the first step that awaits a response."""
+        for p in list_prompts(self.series):
+            if self.state.steps[p.id].status == "completed":
                 continue
-            self.run_step(step_id)
-            if checkpoint_path:
-                self.state.save_checkpoint(checkpoint_path)
+            try:
+                record = self.run_step(p.id)
+            finally:
+                if checkpoint_path:
+                    self.state.save_checkpoint(checkpoint_path)
+            if record.status == "awaiting_response":
+                break
         return self.state
+
+    def pending_steps(self) -> list[StepRecord]:
+        return [
+            self.state.steps[p.id]
+            for p in list_prompts(self.series)
+            if self.state.steps[p.id].status != "completed"
+        ]
+
+    def is_complete(self) -> bool:
+        return not self.pending_steps()
 
     def export_manifest(self, output_dir: str | Path) -> dict[str, Path]:
         out = Path(output_dir)
         out.mkdir(parents=True, exist_ok=True)
-
-        # 1. State JSON
-        state_file = out / "workflow_state.json"
+        state_file = out / STATE_FILE
         self.state.save_checkpoint(state_file)
 
-        # 2. Markdown Summary Manifest
-        manifest_file = out / "pipeline_manifest.md"
-        manifest_lines = [
-            "# Content Production Pipeline Manifest",
+        topic = self.config.get("idea") or self.config.get("topic") or self.config.get("niche") or "N/A"
+        lines = [
+            f"# Content Pipeline Manifest ({self.series})",
             "",
-            f"- Generated at: `{self.state.updated_at}`",
-            f"- Topic: `{self.config.get('idea', self.config.get('niche', 'N/A'))}`",
+            f"- Provider: `{self.state.provider}`",
+            f"- Updated: `{self.state.updated_at}`",
+            f"- Topic: `{topic}`",
             "",
-            "## Execution Overview",
-            "",
-            "| Step | Title | Status | Completed At |",
+            "| Prompt | Step | Title | Status |",
             "|:---|:---|:---|:---|",
         ]
-        for p in list_prompts():
-            rec = self.state.steps.get(p.id)
-            status = rec.status if rec else "pending"
-            completed = rec.completed_at if rec else "-"
-            manifest_lines.append(f"| {p.id} | {p.title} | `{status}` | {completed} |")
+        prompts = list_prompts(self.series)
+        for p in prompts:
+            rec = self.state.steps[p.id]
+            lines.append(f"| {p.id:02d} | {p.series_index} | {p.title} | `{rec.status}` |")
+        lines.append("")
+        for p in prompts:
+            rec = self.state.steps[p.id]
+            lines.append(f"## Prompt {p.id:02d}: {p.title}")
+            lines.append("")
+            if rec.status == "completed":
+                lines.append(rec.output)
+            elif rec.error:
+                lines.append(f"> FAILED: {rec.error}")
+            else:
+                lines.append(f"> {rec.status}")
+            lines.append("")
 
-        manifest_lines.append("\n---\n")
-        for p in list_prompts():
-            rec = self.state.steps.get(p.id)
-            manifest_lines.append(f"### Step {p.id}: {p.title}\n")
-            if rec and rec.output:
-                manifest_lines.append("#### Output Deliverable\n")
-                manifest_lines.append(rec.output)
-            manifest_lines.append("\n---\n")
-
-        manifest_file.write_text("\n".join(manifest_lines), encoding="utf-8")
-
-        return {
-            "state": state_file,
-            "manifest": manifest_file,
-        }
+        manifest_file = out / MANIFEST_FILE
+        manifest_file.write_text("\n".join(lines), encoding="utf-8")
+        return {"state": state_file, "manifest": manifest_file}

@@ -2,148 +2,113 @@ English | [中文版](README.md)
 
 # Instagram Growth & Faceless Content Prompt Framework (IG Growth Prompts)
 
-This repository curates and systematically deconstructs the "Claude IG Prompt Series" originally shared by creator `@jasonxtsai`. The underlying workflow helped scale an Instagram account from 0 to 60k followers and 8M views in two months. Here, it is abstracted into 5 standardized, plug-and-play prompt modules, accompanied by a zero-dependency (Python standard library only) CLI tool to help creators and engineers rapidly produce personalized, high-performing post scripts.
+This repository curates and systematically deconstructs the Instagram growth systems originally shared by creator `@jasonxtsai` (covering both faceless carousels and short-form video reels). Here, it is abstracted into **12 structured prompt modules with unified IDs (01 ~ 12)**, accompanied by a zero-dependency (Python standard library only) workflow engine, an experiment ledger, and an SVG carousel card renderer.
+
+> [!IMPORTANT]
+> **Model & Agent Agnostic**
+> All prompts and tooling in this repository are strictly tool-agnostic. You are never locked into a specific vendor or agent. Feel free to use your preferred AI tools: web chats (Claude, ChatGPT, Gemini, DeepSeek, v0), local models (Ollama, LLaMA), CLI commands (`llm`, `claude -p`), or custom AI coding agents.
 
 ---
 
 ## Key Features
 
 - **Zero Third-Party Dependencies**: The `igprompts` core tool runs entirely on the Python standard library (`stdlib-only`). No `pip install` required.
-- **5 Structured Prompt Modules**: Covers anti-cliché topic discovery, 15 hooks across 5 distinct psychology angles, 3 faceless content variants, retention/completion rate rewriting, and authoritative low-profile positioning.
-- **Automated Workflow Engine (State Machine)**: Supports step-by-step lifecycle management, checkpoint persistence, resumption (`--resume`), and pluggable providers.
-- **Local Vector SVG Carousel Generator**: Generates 1080x1350 (Instagram 4:5 vertical) dark-mode vector cards directly on local disk with zero extra tools.
-- **Clear Evolution Roadmap**: Outlines Phases 1 to 4 in [ROADMAP.en.md](ROADMAP.en.md).
-- **Strict Engineering Standards**: Includes a native Windows quality check gate (`tools/dev_check.ps1`), offline Markdown link validation, bilingual documentation, and GitHub Actions CI.
+- **12 Structured Prompt Modules with Unified IDs**:
+  - **Series 1 (01 ~ 05)**: Faceless & Carousel System (anti-cliché ideation, 15-char hooks, faceless adaptation, greased-chute copy, low-profile authority).
+  - **Series 2 (06 ~ 12)**: Short-Form Video & Reels System (7-day topics, 1-3s hooks, retention scripts, viral sharing, data diagnosis, strategic trend jacking, 7-day test matrix).
+- **Pluggable Execution Providers**:
+  - `manual`: File-based handoff in `handoff/` for copy-pasting to any chat UI, paired with `--resume`.
+  - `command`: Stream prompts directly to local CLIs via standard input/output (stdin/stdout).
+  - `dry-run`: Deterministic offline verification with explicit markers (no invented fake content).
+- **Headless Vector SVG Carousel Generator**: Pure Python stdlib generator producing 1080x1350 (Instagram 4:5 vertical) dark-mode vector cards.
+- **7-Day Experiment Ledger & Review Loop**: Prompt 12 generates the plan -> CSV ledger records actual stats -> automated metric calculation -> feeds directly into Prompt 10 for diagnostic rewriting.
+- **Clear Evolution Roadmap**: Documented in [ROADMAP.en.md](ROADMAP.en.md).
 
 ---
 
-## Repository Structure
+## Prompts Overview (Unified IDs 01 ~ 12)
 
-```
-ig-growth-prompts/
-├── .github/workflows/ci.yml            # Cross-platform CI pipeline (Windows + Ubuntu)
-├── .editorconfig                       # Indentation & encoding rules (UTF-8, LF)
-├── .gitattributes                      # Git line ending normalization (eol=lf)
-├── .gitignore                          # Python / IDE ignore rules
-├── AGENTS.md                           # AI Agent governance (Single Source of Truth)
-├── CLAUDE.md                           # Claude-specific guidance & testing protocol
-├── CHANGELOG.md                        # Traditional Chinese Changelog (Keep a Changelog)
-├── CHANGELOG.en.md                     # English Changelog
-├── LICENSE                             # MIT License
-├── README.md                           # Traditional Chinese documentation
-├── README.en.md                        # English documentation
-├── ROADMAP.md                          # Workflow automation roadmap (Traditional Chinese)
-├── ROADMAP.en.md                       # Workflow automation roadmap (English)
-├── igprompts/                          # Core Python package (stdlib-only)
-│   ├── __init__.py
-│   ├── __main__.py
-│   ├── cli.py                          # CLI implementation
-│   ├── core.py                         # Template retrieval and variable rendering
-│   ├── models.py                       # Prompt definitions & metadata
-│   ├── renderer.py                     # Local SVG 4:5 carousel generator
-│   └── workflow.py                     # Workflow engine, state machine & providers
-├── prompts/                            # 5 core prompt specifications and transcripts
-│   ├── 01-niche-ideation.md            # Prompt 1: Niche Ideation & Anti-cliché Strategy
-│   ├── 02-hook-generator.md            # Prompt 2: 15 Hooks across 5 Core Archetypes
-│   ├── 03-faceless-formats.md          # Prompt 3: 3 Faceless High-reach Formats
-│   ├── 04-retention-optimization.md    # Prompt 4: Retention, Read-through & Saves
-│   └── 05-authority-positioning.md     # Prompt 5: Low-Profile Authority Positioning
-├── workflow/
-│   └── content_pipeline.md             # 5-stage content pipeline SOP
-├── examples/
-│   └── sample_inputs.json              # Sample configuration payload
-├── tests/                              # Unit test suite
-│   ├── test_cli.py
-│   ├── test_prompts.py
-│   ├── test_renderer.py
-│   └── test_workflow.py
-└── tools/                              # Quality gate & maintenance tools
-    ├── check_links.py                  # Offline Markdown relative link resolver
-    └── dev_check.ps1                   # Windows-native Canonical Quality Gate
-```
+### Series 1: Faceless & Carousel System (Prompts 01 ~ 05)
+
+| ID | Focus | Persona / Authority | Mission | Detailed Spec |
+|:---|:---|:---|:---|:---|
+| **01** | **Anti-Cliché Ideation** | 10-year Growth Consultant (scaled 50 accounts) | Identify 7 overused clichés; generate 10 anti-cliché concepts; rank Top 3 | [01-niche-ideation.md](prompts/01-niche-ideation.md) |
+| **02** | **Hook Generator** | Viral Copywriter (+40% completion rate) | Output 15 hooks (suspense, counter-intuitive, emotional, data, insider); max 15 chars | [02-hook-generator.md](prompts/02-hook-generator.md) |
+| **03** | **Faceless Formats** | Faceless Content Strategist | Adapt one idea into Carousel, Subtitle Reel, and Silent Visual with full specs | [03-faceless-formats.md](prompts/03-faceless-formats.md) |
+| **04** | **Retention Polish** | Retention Optimization Consultant | Strip weak phrases/fluff; build line-by-line momentum; maximize dwell & saves | [04-retention-optimization.md](prompts/04-retention-optimization.md) |
+| **05** | **Authority Positioning** | Personal Brand Positioning Consultant | Eliminate guru fluff and boastful metrics; produce Textured, Punchy, Premium versions | [05-authority-positioning.md](prompts/05-authority-positioning.md) |
+
+### Series 2: Short-Form Video & Reels System (Prompts 06 ~ 12)
+
+| ID | Focus | Persona / Authority | Mission | Detailed Spec |
+|:---|:---|:---|:---|:---|
+| **06** | **7-Day Topics** | Reels Strategy Consultant | Anchor to follower count and stage goals; produce 7 viable topic concepts | [06-reels-7day-topics.md](prompts/06-reels-7day-topics.md) |
+| **07** | **Top Opening Hooks** | Viral Short-Form Copywriter | Output 20 hooks across 8 psychological mechanisms; rank Top 5 | [07-reels-top-hooks.md](prompts/07-reels-top-hooks.md) |
+| **08** | **Retention Scripts** | Video Retention Director | 7 key components: hook, storyboard, voiceover, on-screen text, pacing, seconds | [08-reels-retention-script.md](prompts/08-reels-retention-script.md) |
+| **09** | **Save & Share** | Viral Growth Consultant | 5 angles (practical, identity, emotional, surprise, problem); altruistic sharing | [09-reels-save-and-share.md](prompts/09-reels-save-and-share.md) |
+| **10** | **Video Revival** | Video Data Analyst | Separate confirmed insights from speculative guesses; diagnose & rewrite | [10-reels-revival.md](prompts/10-reels-revival.md) |
+| **11** | **Strategic Trends** | Trend Strategy Analyst | "Mechanism != Video": abstract viral mechanics to niche; flag saturation | [11-reels-strategic-trends.md](prompts/11-reels-strategic-trends.md) |
+| **12** | **Testing Matrix** | Experiment Scheduling Consultant | 7-day orthogonal variance testing matrix with explicit hypotheses & metrics | [12-reels-seven-day-test-matrix.md](prompts/12-reels-seven-day-test-matrix.md) |
 
 ---
 
 ## CLI Quickstart
 
-### 1. List Available Prompts and Required Variables
+### 1. List and Render Prompts
 ```bash
+# List all 12 prompts
 python -m igprompts list
-```
-Sample output:
-```text
-ID   Key                      Title                          Required Variables
-------------------------------------------------------------------------------------------
-1    niche_ideation           利基市場防套路與原創點子       niche, audience, goal
-2    hook_generator           15 句 5 種類型開場 Hook 生成器 idea, audience, tone
-3    faceless_formats         3 種不露臉高觸及內容改造       idea, audience, goal
-4    retention_optimization   留存率、完讀率與互動指標優化   content, voice, audience
-5    authority_positioning    不吹噓的個人品牌專業權威改寫   content, audience, brand_voice
+
+# Filter short-form reels series (Prompts 06-12)
+python -m igprompts list --series reels
+
+# Inspect a raw template
+python -m igprompts show 06
+
+# Render a prompt with variables (ready to paste into any AI chat)
+python -m igprompts render 06 --json-file examples/sample_inputs.json
 ```
 
-### 2. View Raw Prompt Templates
+### 2. Manual Handoff Mode (Works with any Chat UI)
 ```bash
-python -m igprompts show 1
-```
-
-### 3. Render a Tailored Prompt
-Supply variables via CLI arguments or feed a JSON configuration file:
-```bash
-# Render Prompt 1 via CLI flags
-python -m igprompts render 1 \
-  --var niche="AI Software Architecture" \
-  --var audience="Senior Engineers & Tech Leads" \
-  --var goal="Establish Technical Authority & Advisory Funnel"
-
-# Or render from a JSON configuration file
-python -m igprompts render 1 --json-file examples/sample_inputs.json
-```
-
-### 4. Export the End-to-End Pipeline
-```bash
-python -m igprompts pipeline --json-file examples/sample_inputs.json -o pipeline_output.md
-```
-
-### 5. Automated Pipeline Runner & SVG Carousel Generator (Phase 1 & 2)
-```bash
-# Execute the workflow state machine, emit state JSON & manifest, and render 4:5 SVGs
 python -m igprompts run-pipeline \
+  --series faceless \
   --json-file examples/sample_inputs.json \
-  --output-dir output_run \
-  --render-slides
+  --provider manual \
+  -o my_work
 ```
-Outputs produced:
-- `output_run/workflow_state.json`: Execution metadata, step statuses, and outputs.
-- `output_run/pipeline_manifest.md`: Formatted deliverable document.
-- `output_run/slides/slide_01.svg` ~ `slide_05.svg`: Vector carousel slides.
+1. Paste `my_work/handoff/01-niche_ideation.prompt.md` into your AI chat tool.
+2. Save the answer as `01-niche_ideation.response.md`.
+3. Re-run `python -m igprompts run-pipeline --resume --provider manual -o my_work` to proceed to the next step.
 
-### 6. Render 1080x1350 Carousel Slides Directly
+### 3. Command Pipe Mode (Local LLM / CLI)
 ```bash
-python -m igprompts render-slides --json-file examples/sample_inputs.json --output-dir my_slides
+python -m igprompts run-pipeline \
+  --series faceless \
+  --json-file examples/sample_inputs.json \
+  --provider command \
+  --cmd "ollama run llama3" \
+  -o my_work
 ```
 
----
+### 4. 7-Day Experiment Ledger & Review Loop (Phase 3)
+```bash
+# Step A: Initialize CSV ledger based on Prompt 12
+python -m igprompts experiment plan --csv ledger.csv
 
-## Core Prompts Overview
+# Step B: Record real view/save/share numbers from the Instagram dashboard
 
-| # | Role & Focus | Persona / Authority | Mission | Detailed Spec |
-|:---|:---|:---|:---|:---|
-| **1** | **Anti-Cliché Ideation** | 10-year Growth Consultant (scaled 50 accounts to 100k) | Identify 7 overused clichés; generate 10 anti-cliché original concepts; rank Top 3 | [01-niche-ideation.md](prompts/01-niche-ideation.md) |
-| **2** | **Hook Generator** | Viral Copywriter (+40% completion rate) | Output 15 hooks (suspense, counter-intuitive, emotional, data, insider; 3 each); max 15 chars; rank Top 5 | [02-hook-generator.md](prompts/02-hook-generator.md) |
-| **3** | **Faceless Formats** | Faceless Content Strategist | Adapt one idea into Carousel, Subtitle-only Reel, and Silent Visual; provide slide/scene text & styling | [03-faceless-formats.md](prompts/03-faceless-formats.md) |
-| **4** | **Retention Polish** | Retention Optimization Consultant | Strip weak phrases/fluff; build line-by-line momentum; maximize dwell time, completion, saves & shares | [04-retention-optimization.md](prompts/04-retention-optimization.md) |
-| **5** | **Authority Positioning** | Personal Brand Positioning Consultant | Eliminate guru fluff and boastful metrics; produce Textured, Punchy, and Premium versions | [05-authority-positioning.md](prompts/05-authority-positioning.md) |
+# Step C: Generate analysis report and feed directly into Prompt 10
+python -m igprompts experiment report \
+  --csv ledger.csv \
+  --output report.md \
+  --prompt-out prompt10_input.txt
+```
 
-For complete end-to-end SOP guidelines, see [workflow/content_pipeline.md](workflow/content_pipeline.md).
-
----
-
-## Notable Prompt Engineering Insights
-
-1. **Negative Constraint First**: Prompts typically ask "give me 10 ideas," resulting in generic outputs. Prompt 1 forces the model to articulate 7 overused tropes first, constructing an effective filter boundary that elevates originality.
-2. **Categorical Taxonomy**: Prompt 2 divides hooks into 5 psychological categories, granting creators balanced A/B testing vectors rather than repetitive phrasing.
-3. **Anti-AI & Anti-Guru Guardrails**: Explicitly rules out preachy tones, excessive metric-flaunting, and boilerplate robotic phrasing, addressing key failure modes of modern LLM copy.
-4. **Production-Ready Deliverables**: Prompts demand scene-by-scene scripts, visual advice (typography/palettes), captions, and CTAs ready to drop into Canva, CapCut, or schedulers.
+### 5. Headless 1080x1350 Carousel SVG Generation
+```bash
+python -m igprompts render-slides --from examples/sample_slides.md -o slides_out
+```
 
 ---
 
@@ -154,11 +119,6 @@ All modifications must pass the Windows Canonical Quality Gate:
 ```powershell
 pwsh -File tools/dev_check.ps1
 ```
-
-Validation includes:
-1. **Unit tests**: `python -m unittest discover -s tests -p "test_*.py" -v`
-2. **Markdown links**: `python tools/check_links.py` (offline verification of all Markdown links and images)
-3. **Git whitespace & newline checks**: `git diff --check`
 
 ---
 

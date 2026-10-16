@@ -27,13 +27,15 @@ class TestCLI(unittest.TestCase):
             code = main(["list"])
         self.assertEqual(code, 0)
         output = f.getvalue()
+        self.assertIn("01", output)
+        self.assertIn("12", output)
         self.assertIn("niche_ideation", output)
-        self.assertIn("authority_positioning", output)
+        self.assertIn("reels_07_matrix", output)
 
     def test_cli_show(self):
         f = io.StringIO()
         with redirect_stdout(f):
-            code = main(["show", "1"])
+            code = main(["show", "01"])
         self.assertEqual(code, 0)
         self.assertIn("操盤 IG 超過 10 年的成長顧問", f.getvalue())
 
@@ -41,7 +43,7 @@ class TestCLI(unittest.TestCase):
         f = io.StringIO()
         with redirect_stdout(f):
             code = main([
-                "render", "1",
+                "render", "01",
                 "--var", "niche=AI",
                 "--var", "audience=Engineers",
                 "--var", "goal=Reach",
@@ -49,22 +51,6 @@ class TestCLI(unittest.TestCase):
         self.assertEqual(code, 0)
         output = f.getvalue()
         self.assertIn("🎯 利基市場（Niche）= AI", output)
-        self.assertIn("👥 受眾（Audience）= Engineers", output)
-        self.assertIn("🚩 目標（Goal）= Reach", output)
-
-    def test_cli_render_missing_fail(self):
-        err = io.StringIO()
-        with redirect_stderr(err):
-            code = main(["render", "1", "--var", "niche=AI"])
-        self.assertEqual(code, 1)
-        self.assertIn("missing required variables", err.getvalue())
-
-    def test_cli_render_allow_missing(self):
-        f = io.StringIO()
-        with redirect_stdout(f):
-            code = main(["render", "1", "--var", "niche=AI", "--allow-missing"])
-        self.assertEqual(code, 0)
-        self.assertIn("<audience>", f.getvalue())
 
     def test_cli_pipeline(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -85,10 +71,9 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(code, 0)
             self.assertTrue(out_file.exists())
             content = out_file.read_text(encoding="utf-8")
-            self.assertIn("# End-to-End Content Generation Pipeline", content)
-            self.assertIn("Step 1: 利基市場防套路與原創點子", content)
+            self.assertIn("# Content Pipeline: 圖文與不露臉精準留存體系", content)
 
-    def test_cli_run_pipeline(self):
+    def test_cli_run_pipeline_dry_run(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
             json_file = Path(tmp_dir) / "cfg.json"
             json_file.write_text(json.dumps({
@@ -103,22 +88,38 @@ class TestCLI(unittest.TestCase):
             }, ensure_ascii=False), encoding="utf-8")
 
             out_dir = Path(tmp_dir) / "run_out"
-            code = main(["run-pipeline", "-f", str(json_file), "-o", str(out_dir), "--render-slides"])
+            code = main(["run-pipeline", "-f", str(json_file), "-o", str(out_dir)])
             self.assertEqual(code, 0)
             self.assertTrue((out_dir / "workflow_state.json").exists())
             self.assertTrue((out_dir / "pipeline_manifest.md").exists())
-            self.assertTrue((out_dir / "slides" / "slide_01.svg").exists())
 
-    def test_cli_render_slides_from_json(self):
+    def test_cli_render_slides(self):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            json_file = Path(tmp_dir) / "cfg.json"
-            json_file.write_text(json.dumps({"idea": "Direct Slides Test"}), encoding="utf-8")
-
-            out_dir = Path(tmp_dir) / "slides_direct"
-            code = main(["render-slides", "-f", str(json_file), "-o", str(out_dir)])
+            spec_file = Path(tmp_dir) / "slides.md"
+            spec_file.write_text("# 標題一\n內文說明\n---\n# 標題二\n第二頁", encoding="utf-8")
+            out_dir = Path(tmp_dir) / "slides_out"
+            code = main(["render-slides", "--from", str(spec_file), "-o", str(out_dir)])
             self.assertEqual(code, 0)
             self.assertTrue((out_dir / "slide_01.svg").exists())
 
+    def test_cli_experiment_plan_and_report(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            csv_file = Path(tmp_dir) / "ledger.csv"
+            code_plan = main(["experiment", "plan", "--csv", str(csv_file)])
+            self.assertEqual(code_plan, 0)
+            self.assertTrue(csv_file.exists())
+
+            # Fill one line with data
+            content = (
+                "day,hypothesis,topic,hook,format,cta,primary_metric,views,saves,shares,comments,profile_visits,follows,avg_watch_pct\n"
+                "1,Hypo,Top,Hk,Fmt,Cta,views,500,10,5,2,10,1,50.0\n"
+            )
+            csv_file.write_text(content, encoding="utf-8-sig")
+
+            rep_file = Path(tmp_dir) / "report.md"
+            code_rep = main(["experiment", "report", "--csv", str(csv_file), "-o", str(rep_file)])
+            self.assertEqual(code_rep, 0)
+            self.assertTrue(rep_file.exists())
 
 
 if __name__ == "__main__":

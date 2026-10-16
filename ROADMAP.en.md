@@ -2,62 +2,62 @@ English | [中文版](ROADMAP.md)
 
 # Workflow Automation Roadmap
 
-This document outlines the systematic evolution from raw prompts into an automated, extensible, and locally verifiable content production pipeline.
+This repository transforms social media growth strategies into a **tool-agnostic (Model & Agent Agnostic), local-first, extensible, and strictly governed** content production pipeline.
+
+Users are free to use their preferred AI tools (Claude, ChatGPT, Gemini, DeepSeek, local Ollama, Copilot, or custom coding agents). All prompts are standard plain text, and the workflow engine supports file handoffs, CLI command pipes, and Python callables.
 
 ```
-[Raw Prompt Framework]
+[Prompt Knowledge Base: Unified IDs 01 ~ 12]
+       │
+       ├─ Series 1: Faceless & Carousel Series (Prompts 01 ~ 05)
+       └─ Series 2: Short-Form Video & Reels Series (Prompts 06 ~ 12)
        │
        ▼
-[Phase 1: Workflow State Machine & Runner]  ◀── Implemented in this iteration
-  - Step-by-step state machine (pending -> running -> completed)
-  - Checkpoint persistence & resumption
-  - Pluggable provider interface (DryRun / Interactive / LLM Protocol)
+[Phase 1: Tool-Agnostic Workflow Engine] ◀── Implemented (v0.3.0)
+  - State machine (pending -> running -> completed | awaiting_response | failed)
+  - Checkpoint persistence and resumption
+  - Multi-provider support:
+    • ManualProvider: Markdown file handoff for any web chat UI
+    • CommandProvider: Standard stdin/stdout piping to any CLI (ollama, llm, claude, etc.)
+    • CallableProvider: Wrap custom Python SDKs or agents
+    • DryRunProvider: Offline verification with explicit markers (no canned outputs)
        │
        ▼
-[Phase 2: Local Headless Visual & Card Renderer] ◀── Implemented in this iteration
-  - Zero-dependency standard library SVG card generator (1080x1350 4:5 aspect ratio)
-  - Dark mode carousel slides (Cover, Body, and Call-To-Action)
+[Phase 2: Local Headless Visual Card Renderer] ◀── Implemented (v0.3.0)
+  - Zero-dependency stdlib SVG generator (1080x1350 Instagram 4:5 vertical)
+  - Renders from ```slides markdown blocks produced by AI or users
        │
        ▼
-[Phase 3: Batch Queue & Content Calendar Scheduling]
-  - Batch parsing of topic queues
-  - Automated weekly/monthly content calendar generation
+[Phase 3: 7-Day Experiment Ledger & Review Loop] ◀── Implemented (v0.3.0)
+  - Prompt 12 generates a test plan -> `experiment plan` writes a CSV ledger
+  - User fills actual dashboard metrics -> `experiment report` ranks metrics
+  - Categorizes confirmed conclusions vs unknown metrics
+  - Directly feeds Prompt 10 for diagnostic rewriting
        │
        ▼
-[Phase 4: Multi-Channel Publishing & Ecosystem Integrations]
-  - Export structures for Notion, Airtable, and Buffer
-  - Scheduled generation via GitHub Actions and webhooks
+[Phase 4: Multi-Channel Publishing & Ecosystem Integrations] (Future Scope)
+  - Export structures for Buffer, Notion, and Airtable
+  - Automated dispatch via GitHub Actions and webhooks
 ```
 
 ---
 
 ## Detailed Roadmap Phases
 
-### Phase 1: Structured Workflow Engine & State Machine (Completed)
-- **Objective**: Upgrade 5-step content generation from static text pasting to a managed stateful pipeline.
-- **Deliverables**:
-  - `igprompts/workflow.py`:
-    - `WorkflowState`: Tracks pipeline stages, input parameters, step outputs, and execution timestamps.
-    - `WorkflowRunner`: Orchestrates step sequencing with retry and resumption capabilities.
-    - `WorkflowProvider`: Pluggable execution contract. Comes built-in with an offline `DryRunProvider` and CLI `InteractiveProvider`, with an open contract for custom LLM backends.
-    - Checkpoint persistence and `--resume` support.
+### Phase 1: Tool-Agnostic Workflow Engine (Completed)
+- **Modules**: `igprompts/providers.py`, `igprompts/workflow.py`
+- Eliminates hardcoded model vendor locks.
+- Provides `ManualProvider` for copy-paste handoffs with any chat UI, and `CommandProvider` for command-line pipes.
 
-### Phase 2: Local Headless Visual & Card Renderer (Completed)
-- **Objective**: Automate the creation of faceless visual carousels with zero external dependencies.
-- **Deliverables**:
-  - `igprompts/renderer.py`:
-    - Native SVG vector generation (1080x1350 resolution for Instagram 4:5 vertical standards).
-    - Dark mode styling, auto-wrapped typography, slide pagination dots, and CTA cards.
-    - Seamless CLI integration via `render-slides` and `run-pipeline --output-dir`.
+### Phase 2: Local Headless Visual Card Renderer (Completed)
+- **Module**: `igprompts/renderer.py`
+- Pure Python standard library implementation generating 1080x1350 SVG cards.
+- Renders only explicit slide specs (` ```slides ` blocks); fails loudly if missing instead of inventing dummy slides.
 
-### Phase 3: Batch Queue & Content Calendar (Next Milestone)
-- **Objective**: Support bulk content production across topic queues.
-- **Planned Scope**:
-  - `topics.json` batch queue processor.
-  - Automated generation of weekly and monthly content calendars in Markdown and JSON.
+### Phase 3: 7-Day Experiment Ledger & Review Loop (Completed)
+- **Module**: `igprompts/experiments.py`
+- Pairs Prompt 12 (planning) with Prompt 10 (diagnostic rewriting).
+- Generates UTF-8 BOM CSV files compatible with Excel on Windows. Missing data remains marked as unknown (`—`).
 
-### Phase 4: Multi-Channel Integrations & Ecosystem (Future Scope)
-- **Objective**: Direct interoperability with scheduling tools and databases.
-- **Planned Scope**:
-  - Notion Database and Airtable synchronization exports.
-  - Webhook endpoints and GitHub Actions automated generation.
+### Phase 4: Multi-Channel Publishing & Ecosystem Integrations (Future Scope)
+- Export formats for Notion, Airtable, and social schedulers.
