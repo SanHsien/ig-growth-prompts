@@ -5,7 +5,22 @@ English | [中文版](CHANGELOG.md)
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## 2026-10-17
+## [0.4.0] - 2026-10-17
+
+### Added
+
+- **Phase 4 Content Calendar Engine (`igprompts/calendar.py`)**:
+  - Automatically translates 7-day experiment ledgers or workflow checkpoints into scheduled calendar entries.
+  - Multi-channel exporters for Notion Database (CSV, UTF-8 BOM), Airtable Content Calendar (CSV, UTF-8 BOM), Buffer Social Scheduler (CSV), and Markdown visual table calendars.
+- **Phase 4 Batch Queue Processor (`igprompts/batch.py`)**:
+  - Sequential processing of topic queues from JSON or CSV files (`examples/sample_topics_queue.json`, `sample_topics_queue.csv`).
+  - Automatically invokes corresponding series workflows and generates isolated directories, checkpoints, and manifest summaries.
+- **CLI Subcommand Extensions**:
+  - `python -m igprompts calendar generate`: with options `--from-ledger`, `--from-state`, `--format`, and `--output`.
+  - `python -m igprompts batch run`: with options `-f/--queue`, `--provider`, and `--output-dir`.
+- **Unit Tests Expanded to 43 Tests**: Added `test_calendar.py` and `test_batch.py` covering calendar exports and batch queues.
+
+## [0.3.0] - 2026-10-17
 
 ### Added
 

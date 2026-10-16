@@ -173,6 +173,33 @@ python -m igprompts experiment report \
 python -m igprompts render-slides --from examples/sample_slides.md -o slides_out
 ```
 
+### 6. 多渠道內容發布日曆 (Phase 4)
+支援將 7 天測試帳本或工作流狀態直接轉為發布排程，匯出 Notion Database、Airtable、Buffer (CSV) 及 Markdown 表格：
+```bash
+# 從 7 天測試帳本產生全渠道匯出檔案
+python -m igprompts calendar generate \
+  --from-ledger ledger.csv \
+  --start-date 2026-11-01 \
+  --format all \
+  -o calendar_export
+
+# 僅匯出 Notion CSV
+python -m igprompts calendar generate \
+  --from-ledger ledger.csv \
+  --format notion \
+  -o notion.csv
+```
+
+### 7. 主題庫批次執行 (Phase 4)
+建立 JSON 或 CSV 隊列，自動批次跑完所有主題：
+```bash
+# 使用 JSON 隊列批次跑工作流
+python -m igprompts batch run \
+  -f examples/sample_topics_queue.json \
+  --provider dry-run \
+  -o batch_output
+```
+
 ---
 
 ## 本地開發與驗證閘門
@@ -184,7 +211,7 @@ pwsh -File tools/dev_check.ps1
 ```
 
 執行項目包括：
-1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（31 個單元測試）
+1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（43 個單元測試）
 2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與錨點）
 3. **Git 空白與換行檢查**：`git diff --check`
 

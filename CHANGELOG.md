@@ -4,7 +4,22 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，新的在上面。
 
-## 2026-10-17
+## [0.4.0] - 2026-10-17
+
+### 新增
+
+- **Phase 4 多渠道內容發布日曆引擎 (`igprompts/calendar.py`)**：
+  - 支援將 7 天測試帳本（Prompt 12）或完成的工作流狀態轉換為發布日曆項目。
+  - 支援四種匯出格式：Notion Database (CSV, UTF-8 BOM)、Airtable Content Calendar (CSV, UTF-8 BOM)、Buffer 社群排程器 (CSV) 以及 Markdown 視覺發布日曆表格。
+- **Phase 4 主題庫批次執行模組 (`igprompts/batch.py`)**：
+  - 支援載入 JSON 或 CSV 主題隊列清單（提供範例 `examples/sample_topics_queue.json` 與 `sample_topics_queue.csv`）。
+  - 自動依主題指定之 series 循序執行管線，為每個主題獨立建立目錄、檢查點與 Markdown 清單。
+- **CLI 擴展**：
+  - 新增 `python -m igprompts calendar generate` 命令，支援 `--from-ledger`、`--from-state`、`--format` 與 `--output`。
+  - 新增 `python -m igprompts batch run` 命令，支援 `-f/--queue`、`--provider` 與 `--output-dir`。
+- **單元測試擴增至 43 個**：新增 `test_calendar.py` 與 `test_batch.py`，完整覆蓋日曆匯出與批次隊列邏輯。
+
+## [0.3.0] - 2026-10-17
 
 ### 新增
 

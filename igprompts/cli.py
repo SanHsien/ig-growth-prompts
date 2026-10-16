@@ -6,9 +6,19 @@ import argparse
 import json
 import os
 import sys
+from datetime import date
 from pathlib import Path
 from typing import Any
 
+from .batch import load_topic_queue, run_batch_queue
+from .calendar import (
+    export_airtable_csv,
+    export_buffer_csv,
+    export_markdown_calendar,
+    export_notion_csv,
+    generate_calendar_from_ledger,
+    generate_calendar_from_workflow_state,
+)
 from .core import SERIES_FACELESS, SERIES_REELS, get_prompt, list_prompts, render_pipeline, render_prompt
 from .experiments import build_report, load_ledger, write_plan
 from .providers import CommandProvider, DryRunProvider, ManualProvider, WorkflowProvider
@@ -56,13 +66,14 @@ def _config_from_args(args: argparse.Namespace) -> dict[str, Any]:
 
 
 def _build_provider(args: argparse.Namespace, out_dir: Path) -> WorkflowProvider:
-    if args.provider == "manual":
+    provider_type = getattr(args, "provider", "dry-run")
+    if provider_type == "manual":
         return ManualProvider(out_dir / "handoff")
-    if args.provider == "command":
-        command = args.cmd or os.environ.get(CMD_ENV, "")
+    if provider_type == "command":
+        command = getattr(args, "cmd", None) or os.environ.get(CMD_ENV, "")
         if not command.strip():
             raise ValueError(f"--provider command needs --cmd or the {CMD_ENV} environment variable.")
-        return CommandProvider(command, timeout=args.timeout, encoding=args.encoding)
+        return CommandProvider(command, timeout=getattr(args, "timeout", 600.0), encoding=getattr(args, "encoding", "utf-8"))
     return DryRunProvider()
 
 
@@ -78,22 +89,27 @@ def build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
 
+    # list
     p_list = sub.add_parser("list", help="List prompts and their variables.")
     p_list.add_argument("--series", "-s", choices=SERIES_CHOICES)
 
+    # show
     p_show = sub.add_parser("show", help="Show a raw template.")
     p_show.add_argument("id", help="Prompt ID (01-12) or key.")
 
+    # render
     p_render = sub.add_parser("render", help="Fill one prompt with variables.")
     p_render.add_argument("id", help="Prompt ID (01-12) or key.")
     _add_vars(p_render)
     p_render.add_argument("--allow-missing", action="store_true", help="Keep <placeholder> for missing variables.")
 
+    # pipeline
     p_pipe = sub.add_parser("pipeline", help="Write every prompt of a series into one Markdown file.")
     p_pipe.add_argument("--series", "-s", choices=SERIES_CHOICES, default=SERIES_FACELESS)
     _add_vars(p_pipe)
     p_pipe.add_argument("--output", "-o", type=str)
 
+    # run-pipeline
     p_run = sub.add_parser("run-pipeline", help="Run a series step by step with any AI tool.")
     p_run.add_argument("--series", "-s", choices=SERIES_CHOICES, default=SERIES_FACELESS)
     _add_vars(p_run)
@@ -107,11 +123,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_run.add_argument("--render-slides", action="store_true",
                        help="Ask Prompt 03 for a ```slides block and render it to SVG (faceless series).")
 
+    # render-slides
     p_slides = sub.add_parser("render-slides", help="Render SVG cards from a slide spec file.")
     p_slides.add_argument("--from", dest="spec", required=True,
                           help="Markdown slide spec, or any file containing a ```slides block.")
     p_slides.add_argument("--output-dir", "-o", type=str, default="slides_output")
 
+    # experiment
     p_exp = sub.add_parser("experiment", help="7-day test ledger (pairs with Prompts 12 and 10).")
     exp_sub = p_exp.add_subparsers(dest="exp_command", required=True)
     p_plan = exp_sub.add_parser("plan", help="Create an empty CSV ledger.")
@@ -122,6 +140,27 @@ def build_parser() -> argparse.ArgumentParser:
     p_rep.add_argument("--csv", required=True)
     p_rep.add_argument("--output", "-o", type=str, help="Write the Markdown report here.")
     p_rep.add_argument("--prompt-out", type=str, help="Also write Prompt 10 filled with this report.")
+
+    # calendar (Phase 4)
+    p_cal = sub.add_parser("calendar", help="Phase 4: Content calendar generation and multi-channel export.")
+    cal_sub = p_cal.add_subparsers(dest="cal_command", required=True)
+    p_cal_gen = cal_sub.add_parser("generate", help="Generate content calendar from ledger or workflow state.")
+    p_cal_gen.add_argument("--from-ledger", type=str, help="Path to 7-day test ledger CSV.")
+    p_cal_gen.add_argument("--from-state", type=str, help="Path to workflow_state.json.")
+    p_cal_gen.add_argument("--start-date", type=str, default=date.today().isoformat(), help="Start date (YYYY-MM-DD).")
+    p_cal_gen.add_argument("--format", choices=["notion", "airtable", "buffer", "markdown", "all"], default="all")
+    p_cal_gen.add_argument("--output", "-o", dest="output_target", type=str, default="calendar_export",
+                           help="Output directory or target file path.")
+
+    # batch (Phase 4)
+    p_batch = sub.add_parser("batch", help="Phase 4: Batch queue execution for multiple topics.")
+    batch_sub = p_batch.add_subparsers(dest="batch_command", required=True)
+    p_batch_run = batch_sub.add_parser("run", help="Run batch topic queue.")
+    p_batch_run.add_argument("-f", "--queue", required=True, help="Path to topics_queue.json or topics_queue.csv.")
+    p_batch_run.add_argument("--output-dir", "-o", type=str, default="batch_output")
+    p_batch_run.add_argument("--provider", "-p", choices=["dry-run", "manual", "command"], default="dry-run")
+    p_batch_run.add_argument("--cmd", type=str, help="Command for --provider command.")
+
     return parser
 
 
@@ -197,6 +236,72 @@ def _cmd_experiment(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_calendar(args: argparse.Namespace) -> int:
+    if args.cal_command == "generate":
+        entries = []
+        if args.from_ledger:
+            rows = load_ledger(args.from_ledger)
+            entries = generate_calendar_from_ledger(rows, start_date=args.start_date)
+        elif args.from_state:
+            state = WorkflowState.load_checkpoint(args.from_state)
+            entries = generate_calendar_from_workflow_state(state, start_date=args.start_date)
+        else:
+            raise ValueError("Specify either --from-ledger or --from-state.")
+
+        target = Path(args.output_target)
+        is_file = target.suffix.lower() in (".csv", ".md")
+        out_dir = target.parent if is_file else target
+        out_dir.mkdir(parents=True, exist_ok=True)
+        fmt = args.format
+
+        if fmt == "notion" and is_file:
+            p = export_notion_csv(entries, target)
+            print(f"Notion CSV:   {p}")
+            return 0
+        if fmt == "airtable" and is_file:
+            p = export_airtable_csv(entries, target)
+            print(f"Airtable CSV: {p}")
+            return 0
+        if fmt == "buffer" and is_file:
+            p = export_buffer_csv(entries, target)
+            print(f"Buffer CSV:   {p}")
+            return 0
+        if fmt == "markdown" and is_file:
+            export_markdown_calendar(entries, target)
+            print(f"Markdown:     {target}")
+            return 0
+
+        if fmt in ("notion", "all"):
+            p = export_notion_csv(entries, out_dir / "notion_database.csv")
+            print(f"Notion CSV:   {p}")
+        if fmt in ("airtable", "all"):
+            p = export_airtable_csv(entries, out_dir / "airtable_calendar.csv")
+            print(f"Airtable CSV: {p}")
+        if fmt in ("buffer", "all"):
+            p = export_buffer_csv(entries, out_dir / "buffer_schedule.csv")
+            print(f"Buffer CSV:   {p}")
+        if fmt in ("markdown", "all"):
+            p = out_dir / "content_calendar.md"
+            export_markdown_calendar(entries, p)
+            print(f"Markdown:     {p}")
+
+        return 0
+    return 0
+
+
+def _cmd_batch(args: argparse.Namespace) -> int:
+    if args.batch_command == "run":
+        items = load_topic_queue(args.queue)
+        out_dir = Path(args.output_dir)
+        provider = _build_provider(args, out_dir)
+        results = run_batch_queue(items, out_dir, provider=provider)
+        print(f"Batch completed: processed {len(results)} topics in {out_dir}")
+        for r in results:
+            print(f" - [{r['id']}] {r['topic']} ({r['series']}) -> {r['manifest']}")
+        return 0
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     try:
@@ -230,6 +335,10 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "experiment":
             return _cmd_experiment(args)
+        if args.command == "calendar":
+            return _cmd_calendar(args)
+        if args.command == "batch":
+            return _cmd_batch(args)
     except Exception as exc:
         sys.stderr.write(f"Error: {exc}\n")
         return 1

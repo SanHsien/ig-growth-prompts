@@ -121,6 +121,36 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(code_rep, 0)
             self.assertTrue(rep_file.exists())
 
+    def test_cli_calendar_from_ledger(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            csv_file = Path(tmp_dir) / "ledger.csv"
+            code_plan = main(["experiment", "plan", "--csv", str(csv_file)])
+            self.assertEqual(code_plan, 0)
+
+            notion_out = Path(tmp_dir) / "notion.csv"
+            code_cal = main([
+                "calendar",
+                "generate",
+                "--from-ledger", str(csv_file),
+                "--start-date", "2026-11-01",
+                "--format", "notion",
+                "-o", str(notion_out),
+            ])
+            self.assertEqual(code_cal, 0)
+            self.assertTrue(notion_out.exists())
+
+    def test_cli_batch(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            queue_file = Path(tmp_dir) / "queue.json"
+            queue_file.write_text(json.dumps([
+                {"id": "B01", "topic": "主題一", "niche": "賽道", "series": "faceless"}
+            ]), encoding="utf-8")
+
+            batch_out = Path(tmp_dir) / "batch_out"
+            code_batch = main(["batch", "run", "-f", str(queue_file), "-o", str(batch_out)])
+            self.assertEqual(code_batch, 0)
+            self.assertTrue((batch_out / "B01_faceless_carousel" / "pipeline_manifest.md").exists())
+
 
 if __name__ == "__main__":
     unittest.main()

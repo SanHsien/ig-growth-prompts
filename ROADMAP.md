@@ -35,35 +35,47 @@
   - 一鍵填入 Prompt 10（復盤與重寫），完成成長閉環
        │
        ▼
-[Phase 4: 多渠道發布與生態整合] (未來展望)
-  - 匯出 Buffer / Notion / Airtable 的排程資料結構
-  - 支援 GitHub Actions 定時執行或 Webhook 觸發
+[Phase 4: 多渠道發布與主題庫批次執行] ◀── 已實作 (v0.4.0)
+  - 內容發布日曆引擎 (`igprompts/calendar.py`)
+  - 支援 Notion Database、Airtable、Buffer (CSV) 與 Markdown 視覺排程表
+  - 主題庫隊列批次處理器 (`igprompts/batch.py`)：支援 JSON / CSV 隊列批量推進
+       │
+       ▼
+[Phase 5: 雲端排程與 Webhook 生態整合] (未來展望)
+  - 支援 GitHub Actions Schedule (cron) 自動推進批次隊列
+  - 支援 Webhook 觸發（如 Zapier / Make / n8n）與社群發布通知
 ```
 
 ---
 
 ## 階段劃分與最新實作狀態
 
-### Phase 1: 工具中立工作流引擎 (已完成)
+### Phase 1: 工具中立工作流引擎 (已完成 v0.3.0)
 - **核心模組**：`igprompts/providers.py`、`igprompts/workflow.py`
 - **特點**：
   - 徹底消除特定模型綁定。
   - 支援手動交接模式（`ManualProvider`）：自動在 `handoff/` 產出提示詞與等待回覆檔案，可與任何網頁或 App 協作。
   - 支援命令列管道模式（`CommandProvider`）：透過 `IGPROMPTS_LLM_CMD` 環境變數或 `--cmd` 參數直接管線呼叫任何終端工具。
 
-### Phase 2: 純本地圖卡渲染 (已完成)
+### Phase 2: 純本地圖卡渲染 (已完成 v0.3.0)
 - **核心模組**：`igprompts/renderer.py`
 - **特點**：
   - 純 Python 標準庫實現，輸出 1080x1350 向量圖卡。
   - 圖卡內容完全來自 AI 或創作者的真實規格（````slides` 標籤），杜絕假資料。
 
-### Phase 3: 7 天測試帳本與復盤 (已完成)
+### Phase 3: 7 天測試帳本與復盤 (已完成 v0.3.0)
 - **核心模組**：`igprompts/experiments.py`
 - **特點**：
   - 連結 Prompt 12（測試排程）與 Prompt 10（數據診斷與重寫）。
   - CSV 支援 UTF-8 BOM，在 Windows Excel 中開啟不亂碼。
   - 空白數據保留為未測（`—`），絕不擅自填 0，維持實證原則。
 
-### Phase 4: 多渠道整合與自動化排程 (後續規劃)
-- 輸出 Notion Database、Airtable、Buffer 等排程清單。
-- 支援排程與 Webhook 整合。
+### Phase 4: 多渠道發布與主題庫批次執行 (已完成 v0.4.0)
+- **核心模組**：`igprompts/calendar.py`、`igprompts/batch.py`
+- **特點**：
+  - **多渠道發布日曆**：可由 7 天測試帳本（Prompt 12）或工作流狀態直接衍生發布日曆，支援匯出 Notion Database、Airtable Content Calendar、Buffer 排程 CSV 及 Markdown 表格。
+  - **主題庫批次推進**：可讀取 JSON 或 CSV 主題清單（`examples/sample_topics_queue.json`、`sample_topics_queue.csv`），依所屬系列自動批次執行管線並分別留存檢查點與清單。
+
+### Phase 5: 雲端排程與 Webhook 整合 (未來展望)
+- 支援 GitHub Actions Schedule (cron) 定時推進隊列。
+- 支援與 Zapier / Make / n8n 等自動化中樞透過 Webhook 串接。

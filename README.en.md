@@ -110,6 +110,32 @@ python -m igprompts experiment report \
 python -m igprompts render-slides --from examples/sample_slides.md -o slides_out
 ```
 
+### 6. Multi-Channel Content Calendar (Phase 4)
+Convert 7-day experiment ledgers or workflow checkpoints into ready-to-publish schedules with exporters for Notion, Airtable, Buffer, and Markdown:
+```bash
+# Export all channels from experiment ledger
+python -m igprompts calendar generate \
+  --from-ledger ledger.csv \
+  --start-date 2026-11-01 \
+  --format all \
+  -o calendar_export
+
+# Export Notion CSV only
+python -m igprompts calendar generate \
+  --from-ledger ledger.csv \
+  --format notion \
+  -o notion.csv
+```
+
+### 7. Batch Topic Queue Runner (Phase 4)
+Queue multiple topics in JSON or CSV and run workflows sequentially:
+```bash
+python -m igprompts batch run \
+  -f examples/sample_topics_queue.json \
+  --provider dry-run \
+  -o batch_output
+```
+
 ---
 
 ## Local Development & Quality Gates
@@ -119,6 +145,8 @@ All modifications must pass the Windows Canonical Quality Gate:
 ```powershell
 pwsh -File tools/dev_check.ps1
 ```
+
+Verification includes 43 unit tests, full Markdown link validation, and git diff whitespace hygiene.
 
 ---
 
