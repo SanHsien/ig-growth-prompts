@@ -9,6 +9,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- **Automated Workflow Engine (Phase 1)**:
+  - `igprompts/workflow.py`: `WorkflowState`, `WorkflowRunner`, `DryRunProvider`, `CallableProvider`.
+  - Supports step-level lifecycle tracking (pending, running, completed, failed), checkpoint persistence, and resumption (`--resume`).
+  - Exports `pipeline_manifest.md` and `workflow_state.json`.
+- **Local Vector SVG Carousel Generator (Phase 2)**:
+  - `igprompts/renderer.py`: Zero external dependencies, pure stdlib generation of 1080x1350 (Instagram 4:5 vertical) dark-mode carousel slides.
+- **CLI Enhancements**:
+  - `python -m igprompts run-pipeline`: Execute the 5-step workflow runner with optional `--render-slides` visual output.
+  - `python -m igprompts render-slides`: Generate SVG carousel cards directly from state or config.
+- **Roadmap Documents**: Added bilingual roadmap specifications `ROADMAP.md` and `ROADMAP.en.md`.
+- **Unit Tests Expanded**: Added `tests/test_workflow.py` and `tests/test_renderer.py`, raising test count to 24 tests.
+
 - `igprompts` core package (Python stdlib-only, zero third-party dependencies):
   - Built-in metadata, variable resolution, and template rendering for 5 core prompts.
   - End-to-end pipeline synthesis via `pipeline` command.

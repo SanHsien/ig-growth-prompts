@@ -8,9 +8,11 @@
 
 ## 專案特色
 
-- **零依賴輕量設計**：核心工具 `igprompts` 僅使用 Python 標準函式庫（stdlib-only），無需 `pip install` 任何套件即可直接運作。
+- **零依賴輕量設計**：核心套件 `igprompts` 僅使用 Python 標準函式庫（stdlib-only），無需 `pip install` 任何套件即可直接運作。
 - **5 大結構化 Prompt 模組**：涵蓋防套路選題、15 句 5 型 Hook、3 種不露臉載體、留存完讀改寫、低調懂行權威感。
-- **端到端內容流水線（SOP）**：支援一鍵串聯 5 個 Prompt，直接匯出完整 Markdown 腳本。
+- **自動化工作流引擎（State Machine）**：支援階段執行、檢查點保存（Checkpointing）、斷點續跑（Resume）與自訂 Provider。
+- **純本地向量 SVG 圖卡產生器**：零依賴輸出 1080x1350（Instagram 4:5 最佳直式比例）深色主題輪播圖卡集。
+- **清楚的演進路線圖**：規劃 Phase 1~4 的自動化工作流演進藍圖，詳見 [ROADMAP.md](ROADMAP.md)。
 - **嚴謹工程規範**：包含 Windows 原生品質檢查閘門（`tools/dev_check.ps1`）、Markdown 連結離線檢驗、雙語文件與 GitHub Actions CI。
 
 ---
@@ -30,12 +32,16 @@ ig-growth-prompts/
 ├── LICENSE                             # MIT 授權條款
 ├── README.md                           # 繁體中文說明文件
 ├── README.en.md                        # 英文說明文件
+├── ROADMAP.md                          # 自動化工作流演進路線圖
+├── ROADMAP.en.md                       # 英文路線圖
 ├── igprompts/                          # 核心 Python 套件 (stdlib-only)
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── cli.py                          # 命令列介面實作
 │   ├── core.py                         # 模板檢索與變數渲染
-│   └── models.py                       # Prompt 定義與中繼資料
+│   ├── models.py                       # Prompt 定義與中繼資料
+│   ├── renderer.py                     # 純本地 SVG 4:5 輪播圖卡渲染器
+│   └── workflow.py                     # 工作流引擎、狀態機與 Provider
 ├── prompts/                            # 5 大核心 Prompt 規格與逐字稿
 │   ├── 01-niche-ideation.md            # Prompt 1: 利基選題與防套路原創發想
 │   ├── 02-hook-generator.md            # Prompt 2: 15 句 5 大類型開場 Hook 生成器
@@ -48,7 +54,9 @@ ig-growth-prompts/
 │   └── sample_inputs.json              # 示範輸入參數設定檔
 ├── tests/                              # 單元測試套件
 │   ├── test_cli.py
-│   └── test_prompts.py
+│   ├── test_prompts.py
+│   ├── test_renderer.py
+│   └── test_workflow.py
 └── tools/                              # 工程維護與檢測工具
     ├── check_links.py                  # Markdown 相對連結離線檢查
     └── dev_check.ps1                   # Windows 原生 Canonical Quality Gate
@@ -94,6 +102,24 @@ python -m igprompts render 1 --json-file examples/sample_inputs.json
 ### 4. 一鍵匯出端到端 5 階段 Pipeline
 ```bash
 python -m igprompts pipeline --json-file examples/sample_inputs.json -o pipeline_output.md
+```
+
+### 5. 自動化執行工作流並產生 SVG 圖卡（Phase 1 & 2）
+```bash
+# 執行工作流狀態機，產出 state.json、manifest.md，並生成 4:5 輪播 SVG 圖卡
+python -m igprompts run-pipeline \
+  --json-file examples/sample_inputs.json \
+  --output-dir output_run \
+  --render-slides
+```
+輸出結果：
+- `output_run/workflow_state.json`：包含每一步的狀態、輸入、輸出與時間戳記。
+- `output_run/pipeline_manifest.md`：排版整齊的貼文總結與交付物。
+- `output_run/slides/slide_01.svg` ~ `slide_05.svg`：純本地向量圖卡，可直接在瀏覽器預覽或匯入設計軟體。
+
+### 6. 直接產出 1080x1350 向量輪播圖卡
+```bash
+python -m igprompts render-slides --json-file examples/sample_inputs.json --output-dir my_slides
 ```
 
 ---

@@ -10,7 +10,9 @@ This repository curates and systematically deconstructs the "Claude IG Prompt Se
 
 - **Zero Third-Party Dependencies**: The `igprompts` core tool runs entirely on the Python standard library (`stdlib-only`). No `pip install` required.
 - **5 Structured Prompt Modules**: Covers anti-cliché topic discovery, 15 hooks across 5 distinct psychology angles, 3 faceless content variants, retention/completion rate rewriting, and authoritative low-profile positioning.
-- **End-to-End Production Pipeline (SOP)**: Generate the complete 5-stage content creation pipeline with a single CLI command.
+- **Automated Workflow Engine (State Machine)**: Supports step-by-step lifecycle management, checkpoint persistence, resumption (`--resume`), and pluggable providers.
+- **Local Vector SVG Carousel Generator**: Generates 1080x1350 (Instagram 4:5 vertical) dark-mode vector cards directly on local disk with zero extra tools.
+- **Clear Evolution Roadmap**: Outlines Phases 1 to 4 in [ROADMAP.en.md](ROADMAP.en.md).
 - **Strict Engineering Standards**: Includes a native Windows quality check gate (`tools/dev_check.ps1`), offline Markdown link validation, bilingual documentation, and GitHub Actions CI.
 
 ---
@@ -30,12 +32,16 @@ ig-growth-prompts/
 ├── LICENSE                             # MIT License
 ├── README.md                           # Traditional Chinese documentation
 ├── README.en.md                        # English documentation
+├── ROADMAP.md                          # Workflow automation roadmap (Traditional Chinese)
+├── ROADMAP.en.md                       # Workflow automation roadmap (English)
 ├── igprompts/                          # Core Python package (stdlib-only)
 │   ├── __init__.py
 │   ├── __main__.py
 │   ├── cli.py                          # CLI implementation
 │   ├── core.py                         # Template retrieval and variable rendering
-│   └── models.py                       # Prompt definitions & metadata
+│   ├── models.py                       # Prompt definitions & metadata
+│   ├── renderer.py                     # Local SVG 4:5 carousel generator
+│   └── workflow.py                     # Workflow engine, state machine & providers
 ├── prompts/                            # 5 core prompt specifications and transcripts
 │   ├── 01-niche-ideation.md            # Prompt 1: Niche Ideation & Anti-cliché Strategy
 │   ├── 02-hook-generator.md            # Prompt 2: 15 Hooks across 5 Core Archetypes
@@ -48,7 +54,9 @@ ig-growth-prompts/
 │   └── sample_inputs.json              # Sample configuration payload
 ├── tests/                              # Unit test suite
 │   ├── test_cli.py
-│   └── test_prompts.py
+│   ├── test_prompts.py
+│   ├── test_renderer.py
+│   └── test_workflow.py
 └── tools/                              # Quality gate & maintenance tools
     ├── check_links.py                  # Offline Markdown relative link resolver
     └── dev_check.ps1                   # Windows-native Canonical Quality Gate
@@ -94,6 +102,24 @@ python -m igprompts render 1 --json-file examples/sample_inputs.json
 ### 4. Export the End-to-End Pipeline
 ```bash
 python -m igprompts pipeline --json-file examples/sample_inputs.json -o pipeline_output.md
+```
+
+### 5. Automated Pipeline Runner & SVG Carousel Generator (Phase 1 & 2)
+```bash
+# Execute the workflow state machine, emit state JSON & manifest, and render 4:5 SVGs
+python -m igprompts run-pipeline \
+  --json-file examples/sample_inputs.json \
+  --output-dir output_run \
+  --render-slides
+```
+Outputs produced:
+- `output_run/workflow_state.json`: Execution metadata, step statuses, and outputs.
+- `output_run/pipeline_manifest.md`: Formatted deliverable document.
+- `output_run/slides/slide_01.svg` ~ `slide_05.svg`: Vector carousel slides.
+
+### 6. Render 1080x1350 Carousel Slides Directly
+```bash
+python -m igprompts render-slides --json-file examples/sample_inputs.json --output-dir my_slides
 ```
 
 ---

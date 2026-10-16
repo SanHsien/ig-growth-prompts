@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any
 
 from .core import get_prompt, list_prompts, render_pipeline, render_prompt
+from .renderer import generate_carousel_from_workflow
+from .workflow import DryRunProvider, WorkflowRunner, WorkflowState
 
 
 def parse_var_arguments(var_args: list[str] | None) -> dict[str, str]:
@@ -71,6 +73,30 @@ def build_parser() -> argparse.ArgumentParser:
     pipe_parser.add_argument("--var", "-v", action="append", help="Set variable as key=value.")
     pipe_parser.add_argument("--output", "-o", type=str, help="Optional output markdown file path.")
 
+    # Subcommand: run-pipeline (Phase 1 Automated Runner)
+    run_parser = subparsers.add_parser(
+        "run-pipeline", help="Execute the 5-step workflow runner with state tracking."
+    )
+    run_parser.add_argument("--json-file", "-f", type=str, help="Path to JSON file with variables.")
+    run_parser.add_argument("--var", "-v", action="append", help="Set variable as key=value.")
+    run_parser.add_argument("--resume", "-r", type=str, help="Resume from an existing checkpoint JSON.")
+    run_parser.add_argument(
+        "--output-dir", "-o", type=str, default="output_pipeline", help="Directory to save artifacts."
+    )
+    run_parser.add_argument(
+        "--render-slides", action="store_true", help="Automatically generate 4:5 SVG carousel slides."
+    )
+
+    # Subcommand: render-slides (Phase 2 SVG Generator)
+    slides_parser = subparsers.add_parser(
+        "render-slides", help="Render 1080x1350 SVG carousel cards from state or config."
+    )
+    slides_parser.add_argument("--state-file", "-s", type=str, help="Path to existing workflow_state.json.")
+    slides_parser.add_argument("--json-file", "-f", type=str, help="Path to variables JSON file.")
+    slides_parser.add_argument(
+        "--output-dir", "-o", type=str, default="slides_output", help="Directory for SVG files."
+    )
+
     return parser
 
 
@@ -114,6 +140,43 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"Pipeline successfully written to: {out_path}")
             else:
                 print(doc)
+            return 0
+
+        if args.command == "run-pipeline":
+            state = None
+            if args.resume:
+                state = WorkflowState.load_checkpoint(args.resume)
+                config = state.config
+            else:
+                config = load_config_file(args.json_file)
+                config.update(parse_var_arguments(args.var))
+
+            runner = WorkflowRunner(config=config, provider=DryRunProvider(), state=state)
+            out_dir = Path(args.output_dir)
+            checkpoint_file = out_dir / "workflow_state.json"
+            runner.run_all(checkpoint_path=checkpoint_file)
+            artifacts = runner.export_manifest(out_dir)
+
+            print(f"Workflow completed successfully.")
+            print(f" - State:    {artifacts['state']}")
+            print(f" - Manifest: {artifacts['manifest']}")
+
+            if args.render_slides:
+                slides_dir = out_dir / "slides"
+                files = generate_carousel_from_workflow(runner.state, slides_dir)
+                print(f" - Slides:   {len(files)} SVG cards generated in {slides_dir}")
+            return 0
+
+        if args.command == "render-slides":
+            if args.state_file:
+                state = WorkflowState.load_checkpoint(args.state_file)
+            else:
+                cfg = load_config_file(args.json_file)
+                state = WorkflowState(config=cfg)
+
+            out_dir = Path(args.output_dir)
+            files = generate_carousel_from_workflow(state, out_dir)
+            print(f"Successfully generated {len(files)} SVG carousel slides in: {out_dir}")
             return 0
 
     except Exception as e:

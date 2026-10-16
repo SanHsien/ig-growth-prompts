@@ -88,6 +88,38 @@ class TestCLI(unittest.TestCase):
             self.assertIn("# End-to-End Content Generation Pipeline", content)
             self.assertIn("Step 1: 利基市場防套路與原創點子", content)
 
+    def test_cli_run_pipeline(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            json_file = Path(tmp_dir) / "cfg.json"
+            json_file.write_text(json.dumps({
+                "niche": "Code",
+                "audience": "Devs",
+                "goal": "Grow",
+                "idea": "CLI Test",
+                "tone": "Direct",
+                "content": "Draft",
+                "voice": "Plain",
+                "brand_voice": "Expert",
+            }, ensure_ascii=False), encoding="utf-8")
+
+            out_dir = Path(tmp_dir) / "run_out"
+            code = main(["run-pipeline", "-f", str(json_file), "-o", str(out_dir), "--render-slides"])
+            self.assertEqual(code, 0)
+            self.assertTrue((out_dir / "workflow_state.json").exists())
+            self.assertTrue((out_dir / "pipeline_manifest.md").exists())
+            self.assertTrue((out_dir / "slides" / "slide_01.svg").exists())
+
+    def test_cli_render_slides_from_json(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            json_file = Path(tmp_dir) / "cfg.json"
+            json_file.write_text(json.dumps({"idea": "Direct Slides Test"}), encoding="utf-8")
+
+            out_dir = Path(tmp_dir) / "slides_direct"
+            code = main(["render-slides", "-f", str(json_file), "-o", str(out_dir)])
+            self.assertEqual(code, 0)
+            self.assertTrue((out_dir / "slide_01.svg").exists())
+
+
 
 if __name__ == "__main__":
     unittest.main()

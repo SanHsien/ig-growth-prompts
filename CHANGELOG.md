@@ -8,6 +8,18 @@
 
 ### 新增
 
+- **自動化工作流引擎（Phase 1）**：
+  - `igprompts/workflow.py`：實現 `WorkflowState`、`StepRunner`、`DryRunProvider`、`CallableProvider`。
+  - 支援步驟級狀態流轉（pending、running、completed、failed）、檢查點保存（`save_checkpoint`）與斷點續跑（`--resume`）。
+  - 自動生成執行清單 `pipeline_manifest.md` 與狀態檔案 `workflow_state.json`。
+- **純本地向量 SVG 輪播圖產生器（Phase 2）**：
+  - `igprompts/renderer.py`：零第三方依賴，純標準庫生成 1080x1350（Instagram 4:5 直式標準比例）的高質感深色主題輪播卡（封面、內頁、CTA 導流頁）。
+- **CLI 擴展**：
+  - 新增 `python -m igprompts run-pipeline`：一鍵執行 5 階段工作流並可帶 `--render-slides` 同步產出視覺圖卡。
+  - 新增 `python -m igprompts render-slides`：直接從 state 或設定檔產出完整輪播圖卡集。
+- **路線圖規劃**：新增雙語路線圖文件 `ROADMAP.md` 與 `ROADMAP.en.md`。
+- **單元測試擴充**：新增 `tests/test_workflow.py` 與 `tests/test_renderer.py`，總測試數增加至 24 個且全數通過。
+
 - `igprompts` 核心套件（純 Python 內建標準函式庫 stdlib-only，零第三方依賴）：
   - 支援 5 大 Prompt 規格檢索、變數解析、單一 Prompt 渲染與缺漏警示。
   - 支援 `pipeline` 指令生成 5 階段完整內容生產線 Markdown 文件。
