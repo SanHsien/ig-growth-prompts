@@ -7,6 +7,9 @@ param(
 $ErrorActionPreference = 'Stop'
 $repoRoot = Split-Path -Parent $PSScriptRoot
 
+$env:PYTHONIOENCODING = 'utf-8'
+$env:PYTHONUTF8 = '1'
+
 function Invoke-Gate {
     param([string]$Name, [scriptblock]$Command)
     Write-Host "==> $Name"

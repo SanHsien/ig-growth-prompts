@@ -20,6 +20,9 @@ jobs:
         with:
           python-version: "3.13"
       - shell: pwsh
+        env:
+          PYTHONIOENCODING: utf-8
+          PYTHONUTF8: "1"
         run: ./tools/dev_check.ps1 -BaseRef '${{ github.event.pull_request.base.sha || github.event.before }}'
 
   ubuntu:

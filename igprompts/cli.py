@@ -10,6 +10,19 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+# Ensure UTF-8 output encoding across all Windows console environments
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+    if hasattr(sys.stderr, "reconfigure"):
+        try:
+            sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 from .batch import load_topic_queue, run_batch_queue
 from .calendar import (
     export_airtable_csv,
