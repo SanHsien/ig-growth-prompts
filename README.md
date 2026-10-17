@@ -150,7 +150,9 @@ ig-growth-prompts/
     ├── build_exe.ps1                   # PyInstaller 免安裝單檔與 Inno Setup 建置腳本
     ├── check_links.py                  # Markdown 相對連結離線檢查
     ├── dev_check.ps1                   # Windows 原生 Canonical Quality Gate
-    └── installer.iss                   # Inno Setup Windows 安裝程式規格
+    ├── installer.iss                   # Inno Setup Windows 安裝程式規格
+    └── ci-templates/                   # 跨專案通用 CI 範本
+        └── codeql-private.yml          # 私有倉庫相容版 CodeQL（免 GHAS 付費授權）
 ```
 
 ---
@@ -320,6 +322,19 @@ pwsh -File tools/dev_check.ps1
 1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（49 個單元測試）
 2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與錨點）
 3. **Git 空白與換行檢查**：`git diff --check`
+
+---
+
+## 私有倉庫相容版 CodeQL 範本 (CI Template)
+
+本專案在實施安全性掃描時，針對 GitHub 私有倉庫（Private Repository）調校了一套通用的 CodeQL 工作流範本：
+- **範本檔案**：[`tools/ci-templates/codeql-private.yml`](tools/ci-templates/codeql-private.yml)
+- **背景與痛點**：GitHub 的私有倉庫預設未啟用 GitHub Advanced Security (GHAS) 付費授權。若直接執行官方標準 CodeQL 工作流，在最後上傳 SARIF 報告至 GitHub API 時會拋出 `Code scanning is not enabled for this repository` 錯誤而導致 CI 紅燈中斷。
+- **解決方案與原理**：
+  1. 完整保留官方延伸安全性分析（`queries: security-extended`），代碼靜態安全掃描範圍與深度 **100% 相同、零閹割**。
+  2. 將 analyze 設定為 `upload: false`，避免向未開通的 GitHub API 發起上傳。
+  3. 透過 `actions/upload-artifact` 將 `python.sarif` 報告封存為 GitHub Actions 下載附件供審閱。
+- **跨專案複用指引**：日後若在其他私有專案需要加入完整 CodeQL 掃描且不希望因付費授權中斷 CI，任何 AI Agent 或開發者可直接複製本檔案至該專案的 `.github/workflows/codeql.yml` 即可全綠燈執行。
 
 ---
 

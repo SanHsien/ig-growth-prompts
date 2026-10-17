@@ -1,7 +1,7 @@
 # 證據式代碼審查報告 (Code Review & Verification)
 
 - **審查日期**：2026-10-17
-- **審查對象**：`SanHsien/ig-growth-prompts` (v0.6.0)
+- **審查對象**：`SanHsien/ig-growth-prompts` (v0.6.1)
 - **執行環境**：Windows 11 原生（PowerShell 7.5 / Python 3.14.8 / PyInstaller 6.21.0 / Inno Setup 6.4.3 / Git 2.50）
 - **審查標準**：比照 `SanHsien/Antigravity-Manager` 生態系之高規格標準架構、純標準庫零外部依賴、防禦性編程與嚴格品質閘門。
 
@@ -9,13 +9,14 @@
 
 ## 1. 審查結論
 
-**當前狀態：`dev_check.ps1` 全綠燈 PASS，49 個單元測試通過（Ran 49 tests in 0.3s），28 個 Markdown 文件相對鏈結 100% 有效，零未授權第三方 pip 依賴，Windows 免安裝單檔與 Setup 安裝檔皆可順利編譯。**
+**當前狀態：`dev_check.ps1` 全綠燈 PASS，49 個單元測試通過（Ran 49 tests in 0.3s），29 個 Markdown 文件相對鏈結 100% 有效，零未授權第三方 pip 依賴，Windows 免安裝單檔與 Setup 安裝檔皆順利編譯。**
 
 本輪審查與強化涵蓋以下核心項目：
 1. **GitHub 治理與安全基建**：比照標準補齊 `.github/CODEOWNERS`、`.github/dependabot.yml`、`.github/PULL_REQUEST_TEMPLATE.md`、`.github/ISSUE_TEMPLATE/`（bug_report、feature_request、config.yml）與 `.github/workflows/codeql.yml` 安全掃描工作流。
 2. **安全政策與漏洞通報**：升級 `SECURITY.md`，納入私密漏洞通報連結、零外部依賴供應鏈防護、零遙測離線原則與敏感資訊隔離規範。
 3. **門面與說明文件完備性**：重構 `README.md` 與 `README.en.md` 頂部 Header、Badges 徽章（Release、Version、Python 3.10+、License MIT、CI Status、CodeQL、Zero Dependencies）、快速導航錨點與最新專案架構樹狀圖。
 4. **GUI 執行緒防禦性修復**：修正 `igprompts/gui.py` 背景線程日誌輸出與按鈕狀態更新邏輯，嚴格改用 `root.after(0, ...)` 派發至 Tkinter 主線程，徹底杜絕跨線程操作 UI 的潛在崩潰風險。
+5. **CodeQL 雙模策略與通用範本封存**：評估專案符合公開標準並轉為 Public 後啟用原生 CodeQL 上傳；同時於 `tools/ci-templates/codeql-private.yml` 完整封存私有倉庫專用免 GHAS 授權工作流，供跨專案複用。
 
 ---
 

@@ -1,0 +1,71 @@
+# ==============================================================================
+# CodeQL Workflow Template for Private Repositories (Without GitHub Advanced Security)
+# 私有倉庫相容版 CodeQL 安全掃描工作流範本（免 GHAS 付費授權）
+# ==============================================================================
+#
+# 【適用場景 / Use Case】
+# GitHub 的私有倉庫（Private Repository）預設未啟用 GitHub Advanced Security (GHAS)。
+# 若在私有倉庫直接使用官方標準 CodeQL 工作流，會在最後上傳 SARIF 報告至 GitHub
+# API 時拋出以下錯誤導致 CI 紅燈中斷：
+#   "Code scanning is not enabled for this repository. Please enable code scanning in the repository settings."
+#
+# 【解決方案 / Solution】
+# 1. 保留全量安全靜態分析（queries: security-extended），安全檢查項目與官方完全一致，零閹割。
+# 2. 將 analyze 步驟設定為 upload: false 與 output: results，阻擋向未授權的 API 發起上傳。
+# 3. 透過 actions/upload-artifact 將生成的 python.sarif 封存為 GitHub Actions 附件，供下載審閱。
+#
+# 【跨專案複用方式 / How to Reuse】
+# 將本檔案直接複製至任何私有 Python 專案的 `.github/workflows/codeql.yml` 即可直接綠燈運作。
+# ==============================================================================
+
+name: CodeQL (Private Repo Compatible)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+    - cron: "30 2 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codeql-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Python Security Scan (CodeQL - Private Mode)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-extended
+
+      - name: Perform CodeQL Analysis (Offline Mode)
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+          upload: false
+          output: results
+
+      - name: Archive CodeQL SARIF Report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: codeql-python-sarif
+          path: results
+          if-no-files-found: ignore

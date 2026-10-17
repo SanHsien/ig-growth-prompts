@@ -204,8 +204,8 @@ pwsh -File install.ps1
 
 ### 10. Portable Binary & Windows Setup Installer (SemVer)
 Dual distribution packages built with Semantic Versioning:
-- **Portable Standalone Executable**: `dist/igprompts-gui-v0.6.0-portable.exe` (run anywhere, no Python required)
-- **Windows Setup Installer**: `dist/igprompts-setup-v0.6.0.exe` (Inno Setup with desktop icons and start menu items)
+- **Portable Standalone Executable**: `dist/igprompts-gui-v0.6.1-portable.exe` (run anywhere, no Python required)
+- **Windows Setup Installer**: `dist/igprompts-setup-v0.6.1.exe` (Inno Setup with desktop icons and start menu items)
 - **Local Compiler**:
   ```powershell
   pwsh -File tools/build_exe.ps1
@@ -223,6 +223,19 @@ pwsh -File tools/dev_check.ps1
 ```
 
 Verification includes 49 unit tests, full Markdown link validation, and git diff whitespace hygiene.
+
+---
+
+## Private Repository CodeQL Template (CI Template)
+
+When setting up CodeQL security analysis on private GitHub repositories:
+- **Template File**: [`tools/ci-templates/codeql-private.yml`](tools/ci-templates/codeql-private.yml)
+- **Context & Pain Point**: GitHub Private Repositories require a paid GitHub Advanced Security (GHAS) license to upload SARIF results to the GitHub Code Scanning API. Standard CodeQL workflows will fail with `Code scanning is not enabled for this repository` without GHAS.
+- **Solution & Design**:
+  1. Keeps full static analysis active (`queries: security-extended`) — **0% stripped or degraded security checks**.
+  2. Sets `upload: false` during analysis to avoid calling unpaid APIs.
+  3. Uses `actions/upload-artifact` to archive the complete `python.sarif` report for inspection, keeping CI green.
+- **Cross-Repo Reuse**: Whenever setting up CI for any private repo, developers and AI agents can directly copy this template to `.github/workflows/codeql.yml`.
 
 ---
 
