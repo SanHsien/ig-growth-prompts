@@ -86,7 +86,6 @@ ig-growth-prompts/
 ├── .gitattributes                      # Git 換行統一規範 (eol=lf)
 ├── .gitignore                          # Python / IDE 忽略檔案清單
 ├── AGENTS.md                           # AI Agent 規範（單一真相源）
-├── GEMINI.md                           # Gemini 與通用模型指引
 ├── CONTRIBUTING.md                     # 貢獻者指南
 ├── CHANGELOG.md                        # 中文變更紀錄 (Keep a Changelog)
 ├── CHANGELOG.en.md                     # 英文變更紀錄
@@ -343,7 +342,7 @@ pwsh -File tools/dev_check.ps1
 - [自動化路線圖 (ROADMAP.md)](ROADMAP.md) / [English Roadmap](ROADMAP.en.md)
 - [社群貢獻規範 (CONTRIBUTING.md)](CONTRIBUTING.md)
 - [安全通報政策 (SECURITY.md)](SECURITY.md)
-- [AI 協作指引 (AGENTS.md)](AGENTS.md) / [Gemini 指引 (GEMINI.md)](GEMINI.md)
+- [AI 協作指引 (AGENTS.md)](AGENTS.md)
 
 ---
 

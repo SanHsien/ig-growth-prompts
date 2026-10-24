@@ -245,7 +245,7 @@ When setting up CodeQL security analysis on private GitHub repositories:
 - [Roadmap (ROADMAP.md)](ROADMAP.md) / [English Roadmap](ROADMAP.en.md)
 - [Contributing Guide (CONTRIBUTING.md)](CONTRIBUTING.md)
 - [Security Policy (SECURITY.md)](SECURITY.md)
-- [Agent Guidelines (AGENTS.md)](AGENTS.md) / [Gemini Guide (GEMINI.md)](GEMINI.md)
+- [Agent Guidelines (AGENTS.md)](AGENTS.md)
 
 ---
 
