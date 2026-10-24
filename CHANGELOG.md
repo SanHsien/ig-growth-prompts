@@ -4,6 +4,13 @@
 
 格式參考 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，新的在上面。
 
+## [Unreleased]
+
+### 變更
+
+- **GitHub Actions 依賴升級**：合併 Dependabot PR #2，`codeql.yml` 的 `github/codeql-action` 由 v3 升至 v4。
+- **私有倉庫 CodeQL 範本同步**：`tools/ci-templates/codeql-private.yml` 的 `github/codeql-action/init` 與 `analyze` 同步升至 v4（Dependabot 不掃描 `tools/` 目錄，需手動跟進）。
+
 ## [0.6.1] - 2026-10-17
 
 ### 變更與修復

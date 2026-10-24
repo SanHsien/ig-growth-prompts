@@ -5,6 +5,13 @@ English | [中文版](CHANGELOG.md)
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- **GitHub Actions Dependencies Upgrade**: Merged Dependabot PR #2, bumping `github/codeql-action` in `codeql.yml` from v3 to v4.
+- **Private-Repo CodeQL Template Sync**: Bumped `github/codeql-action/init` and `analyze` in `tools/ci-templates/codeql-private.yml` to v4 (Dependabot does not scan `tools/`, so this must be tracked manually).
+
 ## [0.6.1] - 2026-10-17
 
 ### Changed & Fixed
