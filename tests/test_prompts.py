@@ -100,5 +100,12 @@ class TestPromptCore(unittest.TestCase):
         self.assertIn("Prompt 05", doc)
 
 
+    def test_non_ascii_digit_identifier_is_a_key_error(self):
+        # "²".isdigit() is True but int("²") raises ValueError; callers expect KeyError.
+        for bad in ("²", "①"):
+            with self.subTest(bad=bad), self.assertRaises(KeyError):
+                get_prompt(bad)
+
+
 if __name__ == "__main__":
     unittest.main()

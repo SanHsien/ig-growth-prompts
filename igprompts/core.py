@@ -47,7 +47,7 @@ def get_prompt(identifier: int | str) -> PromptDefinition:
         return PROMPTS[identifier]
     if isinstance(identifier, str):
         cleaned = identifier.strip()
-        if cleaned.isdigit() and int(cleaned) in PROMPTS:
+        if cleaned.isdecimal() and int(cleaned) in PROMPTS:
             return PROMPTS[int(cleaned)]
         for p in PROMPTS.values():
             if p.key == cleaned:
