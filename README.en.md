@@ -167,6 +167,8 @@ python -m igprompts calendar generate \
   --format notion \
   -o notion.csv
 
+# CSV exports prefix cells that start with = + - @ (or Tab/CR) with a single quote ' to block spreadsheet formula
+# injection; plain numbers are left alone. Add --no-csv-sanitize to write cells as-is.
 # Aggregate all batch outputs into a single staggered content calendar
 python -m igprompts calendar generate \
   --from-batch batch_output \

@@ -260,6 +260,8 @@ python -m igprompts calendar generate \
   --format notion \
   -o notion.csv
 
+# CSV 匯出預設會在以 = + - @ 開頭的儲存格前加單引號 '（防 Excel 公式注入；純數字不受影響）。
+# 若要原樣輸出，加 --no-csv-sanitize
 # 匯整整個批次目錄中所有主題，自動間隔排程產生日曆
 python -m igprompts calendar generate \
   --from-batch batch_output \

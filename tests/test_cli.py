@@ -173,5 +173,20 @@ class TestCLI(unittest.TestCase):
             self.assertTrue((cal_out / "calendar.md").exists())
 
 
+    def test_cli_calendar_csv_sanitize_flag(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            csv_file = Path(tmp_dir) / "ledger.csv"
+            main(["experiment", "plan", "--csv", str(csv_file), "--days", "1"])
+            text = csv_file.read_text(encoding="utf-8-sig").replace("1,,,,,", '1,,=1+1,,,', 1)
+            csv_file.write_text(text, encoding="utf-8-sig")
+            safe = Path(tmp_dir) / "safe.csv"
+            raw = Path(tmp_dir) / "raw.csv"
+            base = ["calendar", "generate", "--from-ledger", str(csv_file), "--start-date", "2026-11-01", "--format", "notion"]
+            self.assertEqual(main(base + ["-o", str(safe)]), 0)
+            self.assertEqual(main(base + ["--no-csv-sanitize", "-o", str(raw)]), 0)
+            self.assertIn("'=1+1", safe.read_text(encoding="utf-8-sig"))
+            self.assertNotIn("'=1+1", raw.read_text(encoding="utf-8-sig"))
+
+
 if __name__ == "__main__":
     unittest.main()

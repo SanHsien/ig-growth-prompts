@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Security
+
+- **CSV formula-injection guard**: Notion/Airtable/Buffer exports prefix cells starting with `=`, `+`, `-`, `@`, Tab or CR with a single quote (OWASP guidance); plain numbers, including negatives, are untouched. Disable with `calendar generate --no-csv-sanitize` or `sanitize=False`.
+
 ### Changed
 
 - **GitHub Actions Dependencies Upgrade**: Merged Dependabot PR #2, bumping `github/codeql-action` in `codeql.yml` from v3 to v4.

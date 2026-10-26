@@ -164,6 +164,8 @@ def build_parser() -> argparse.ArgumentParser:
     p_cal_gen.add_argument("--from-batch", type=str, help="Path to batch output directory containing workflow_state.json files.")
     p_cal_gen.add_argument("--interval", type=int, default=1, help="Interval days between posts for batch calendar (default: 1).")
     p_cal_gen.add_argument("--start-date", type=str, default=date.today().isoformat(), help="Start date (YYYY-MM-DD).")
+    p_cal_gen.add_argument("--no-csv-sanitize", action="store_true",
+                           help="Do not prefix CSV cells starting with = + - @ with a single quote (formula-injection guard).")
     p_cal_gen.add_argument("--format", choices=["notion", "airtable", "buffer", "markdown", "all"], default="all")
     p_cal_gen.add_argument("--output", "-o", dest="output_target", type=str, default="calendar_export",
                            help="Output directory or target file path.")
@@ -280,15 +282,15 @@ def _cmd_calendar(args: argparse.Namespace) -> int:
         fmt = args.format
 
         if fmt == "notion" and is_file:
-            p = export_notion_csv(entries, target)
+            p = export_notion_csv(entries, target, sanitize=not args.no_csv_sanitize)
             print(f"Notion CSV:   {p}")
             return 0
         if fmt == "airtable" and is_file:
-            p = export_airtable_csv(entries, target)
+            p = export_airtable_csv(entries, target, sanitize=not args.no_csv_sanitize)
             print(f"Airtable CSV: {p}")
             return 0
         if fmt == "buffer" and is_file:
-            p = export_buffer_csv(entries, target)
+            p = export_buffer_csv(entries, target, sanitize=not args.no_csv_sanitize)
             print(f"Buffer CSV:   {p}")
             return 0
         if fmt == "markdown" and is_file:
@@ -297,13 +299,13 @@ def _cmd_calendar(args: argparse.Namespace) -> int:
             return 0
 
         if fmt in ("notion", "all"):
-            p = export_notion_csv(entries, out_dir / "notion_database.csv")
+            p = export_notion_csv(entries, out_dir / "notion_database.csv", sanitize=not args.no_csv_sanitize)
             print(f"Notion CSV:   {p}")
         if fmt in ("airtable", "all"):
-            p = export_airtable_csv(entries, out_dir / "airtable_calendar.csv")
+            p = export_airtable_csv(entries, out_dir / "airtable_calendar.csv", sanitize=not args.no_csv_sanitize)
             print(f"Airtable CSV: {p}")
         if fmt in ("buffer", "all"):
-            p = export_buffer_csv(entries, out_dir / "buffer_schedule.csv")
+            p = export_buffer_csv(entries, out_dir / "buffer_schedule.csv", sanitize=not args.no_csv_sanitize)
             print(f"Buffer CSV:   {p}")
         if fmt in ("markdown", "all"):
             p = out_dir / "content_calendar.md"

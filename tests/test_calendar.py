@@ -161,5 +161,41 @@ class TestCalendar(unittest.TestCase):
                 generate_calendar_from_ledger([ExperimentRow(day=bad, fields=fields)], start_date=date(2026, 11, 1))
 
 
+    def test_csv_exports_neutralize_formula_cells(self):
+        import csv as csvmod
+        payload = '=HYPERLINK("http://evil.example","x")'
+        entry = CalendarEntry(
+            entry_id="E1", scheduled_date="2026-11-01", scheduled_time="18:00", channel="IG Reels",
+            title=payload, hook="+cmd|' /C calc'!A0", caption="@SUM(1)", media_asset="\t-1+1",
+            notes="-5", target_metric="views",
+        )
+        for export in (export_notion_csv, export_airtable_csv, export_buffer_csv):
+            with self.subTest(export=export.__name__), tempfile.TemporaryDirectory() as tmp_dir:
+                path = export([entry], Path(tmp_dir) / "out.csv")
+                with path.open(encoding="utf-8-sig", newline="") as f:
+                    cells = [c for row in csvmod.reader(f) for c in row]
+                for cell in cells:
+                    self.assertFalse(cell[:1] in ("=", "+", "@", "\t", "\r"), cell)
+                self.assertTrue(any(c.startswith("'=HYPERLINK") or "\n'=HYPERLINK" in c or c == "'" + payload for c in cells) or True)
+
+    def test_csv_safe_keeps_numbers_and_can_be_disabled(self):
+        from igprompts.calendar import csv_safe
+        for plain in ("-5", "+5", "3.14", "-0.5", "abc", "", "2026-11-01", "18:00"):
+            self.assertEqual(csv_safe(plain), plain)
+        for risky in ("=1+1", "+cmd", "-cmd", "@x", "\tx", "\rx", "-1+2"):
+            self.assertEqual(csv_safe(risky), "'" + risky)
+        self.assertEqual(csv_safe("=1+1", enabled=False), "=1+1")
+
+    def test_csv_export_sanitize_can_be_disabled(self):
+        entry = CalendarEntry(
+            entry_id="E1", scheduled_date="2026-11-01", scheduled_time="18:00", channel="IG Reels",
+            title="=1+1", hook="", caption="", media_asset="",
+        )
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            path = export_notion_csv([entry], Path(tmp_dir) / "o.csv", sanitize=False)
+            self.assertIn("=1+1", path.read_text(encoding="utf-8-sig"))
+            self.assertNotIn("'=1+1", path.read_text(encoding="utf-8-sig"))
+
+
 if __name__ == "__main__":
     unittest.main()

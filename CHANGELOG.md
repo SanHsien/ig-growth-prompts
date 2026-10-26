@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### 安全
+
+- **CSV 公式注入防護**：Notion／Airtable／Buffer 匯出的儲存格若以 `=`、`+`、`-`、`@`、Tab、CR 開頭，會加單引號前綴（OWASP 建議做法），純數字（含負數）不受影響。可用 `calendar generate --no-csv-sanitize` 或 `sanitize=False` 關閉。
+
 ### 變更
 
 - **GitHub Actions 依賴升級**：合併 Dependabot PR #2，`codeql.yml` 的 `github/codeql-action` 由 v3 升至 v4。

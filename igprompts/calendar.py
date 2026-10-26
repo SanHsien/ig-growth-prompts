@@ -11,6 +11,7 @@ calendar entries, and exports them into standard formats for:
 from __future__ import annotations
 
 import csv
+import re
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -150,11 +151,32 @@ def generate_calendar_from_batch_dir(
 
 
 
+_NUMBER_RE = re.compile(r"[+-]?\d+(\.\d+)?")
+_FORMULA_PREFIXES = ("=", "+", "-", "@", "\t", "\r")
+
+
+def csv_safe(value: object, enabled: bool = True) -> str:
+    """Neutralize spreadsheet formula injection (OWASP): prefix risky cells with a single quote.
+
+    Plain numbers (including negatives) stay untouched so numeric columns keep working.
+    """
+    text = "" if value is None else str(value)
+    if not enabled or not text.startswith(_FORMULA_PREFIXES) or _NUMBER_RE.fullmatch(text):
+        return text
+    return "'" + text
+
+
+def _safe_row(row: dict[str, str], sanitize: bool) -> dict[str, str]:
+    return {k: csv_safe(v, sanitize) for k, v in row.items()}
+
+
 # ============================================================================
 # Exporters (Notion, Airtable, Buffer, Markdown)
 # ============================================================================
 
-def export_notion_csv(entries: list[CalendarEntry], output_path: str | Path) -> Path:
+def export_notion_csv(
+    entries: list[CalendarEntry], output_path: str | Path, *, sanitize: bool = True
+) -> Path:
     """Export Notion Database compatible CSV (UTF-8 BOM)."""
     p = Path(output_path)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -174,7 +196,7 @@ def export_notion_csv(entries: list[CalendarEntry], output_path: str | Path) -> 
         writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for e in entries:
-            writer.writerow({
+            writer.writerow(_safe_row({
                 "ID": e.entry_id,
                 "Title": e.title,
                 "Date": e.scheduled_date,
@@ -185,11 +207,13 @@ def export_notion_csv(entries: list[CalendarEntry], output_path: str | Path) -> 
                 "Media Asset": e.media_asset,
                 "Target Metric": e.target_metric,
                 "Notes": e.notes,
-            })
+            }, sanitize))
     return p
 
 
-def export_airtable_csv(entries: list[CalendarEntry], output_path: str | Path) -> Path:
+def export_airtable_csv(
+    entries: list[CalendarEntry], output_path: str | Path, *, sanitize: bool = True
+) -> Path:
     """Export Airtable Content Calendar template compatible CSV (UTF-8 BOM)."""
     p = Path(output_path)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -207,7 +231,7 @@ def export_airtable_csv(entries: list[CalendarEntry], output_path: str | Path) -
         writer = csv.DictWriter(f, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         for e in entries:
-            writer.writerow({
+            writer.writerow(_safe_row({
                 "Post Name": e.title,
                 "Scheduled Date": f"{e.scheduled_date}T{e.scheduled_time}:00",
                 "Platform": e.channel,
@@ -216,11 +240,13 @@ def export_airtable_csv(entries: list[CalendarEntry], output_path: str | Path) -
                 "Status": e.status,
                 "Asset": e.media_asset,
                 "KPI": e.target_metric,
-            })
+            }, sanitize))
     return p
 
 
-def export_buffer_csv(entries: list[CalendarEntry], output_path: str | Path) -> Path:
+def export_buffer_csv(
+    entries: list[CalendarEntry], output_path: str | Path, *, sanitize: bool = True
+) -> Path:
     """Export Buffer social scheduler compatible CSV."""
     p = Path(output_path)
     p.parent.mkdir(parents=True, exist_ok=True)
@@ -230,13 +256,13 @@ def export_buffer_csv(entries: list[CalendarEntry], output_path: str | Path) -> 
         writer.writeheader()
         for e in entries:
             text = f"{e.hook}\n\n{e.title}\n\n{e.caption}".strip()
-            writer.writerow({
+            writer.writerow(_safe_row({
                 "Date": e.scheduled_date,
                 "Time": e.scheduled_time,
                 "Text": text,
                 "Media": e.media_asset,
                 "Channel": e.channel,
-            })
+            }, sanitize))
     return p
 
 
