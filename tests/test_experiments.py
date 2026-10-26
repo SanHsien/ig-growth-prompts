@@ -65,5 +65,15 @@ class TestExperiments(unittest.TestCase):
                 load_ledger(csv_path)
 
 
+    def test_non_finite_numbers_rejected(self):
+        header = "day,hypothesis,topic,hook,format,cta,primary_metric,views,saves,shares,comments,profile_visits,follows,avg_watch_pct"
+        for bad in ("nan", "inf", "-inf", "Infinity"):
+            with self.subTest(bad=bad), tempfile.TemporaryDirectory() as tmp_dir:
+                csv_path = Path(tmp_dir) / "ledger.csv"
+                csv_path.write_text(f"{header}\n1,H,T,Hk,F,C,views,{bad},,,,,,\n", encoding="utf-8-sig")
+                with self.assertRaises(LedgerError):
+                    load_ledger(csv_path)
+
+
 if __name__ == "__main__":
     unittest.main()

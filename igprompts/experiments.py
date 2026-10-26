@@ -11,6 +11,7 @@ separate what the data proves from what it cannot show.
 from __future__ import annotations
 
 import csv
+import math
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -61,6 +62,8 @@ def _parse_number(raw: str, column: str, day: str) -> float | None:
         value = float(text)
     except ValueError as exc:
         raise LedgerError(f"Day {day}: column '{column}' has a non-numeric value '{raw}'.") from exc
+    if not math.isfinite(value):
+        raise LedgerError(f"Day {day}: column '{column}' has a non-finite value '{raw}'.")
     if value < 0:
         raise LedgerError(f"Day {day}: column '{column}' is negative ({raw}).")
     if column in PERCENT_COLUMNS and value > 100:
