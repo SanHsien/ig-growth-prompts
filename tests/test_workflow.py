@@ -93,5 +93,15 @@ class TestWorkflow(unittest.TestCase):
             self.assertEqual(res_after, "My AI Answer")
 
 
+    def test_manual_response_with_utf8_bom_is_clean(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            provider = ManualProvider(tmp_dir)
+            definition = get_prompt(1)
+            _, response_path = provider.paths(definition)
+            response_path.write_bytes(b"\xef\xbb\xbfanswer text\n")
+            answer = provider.execute_step(definition, "prompt", WorkflowState())
+            self.assertEqual(answer, "answer text")
+
+
 if __name__ == "__main__":
     unittest.main()

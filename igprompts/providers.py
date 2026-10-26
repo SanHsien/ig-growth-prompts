@@ -80,7 +80,7 @@ class ManualProvider(WorkflowProvider):
         prompt_path.write_text(prompt_text, encoding="utf-8")
         if not response_path.exists():
             return None
-        answer = response_path.read_text(encoding="utf-8").strip()
+        answer = response_path.read_text(encoding="utf-8-sig").strip()
         return answer or None
 
 
