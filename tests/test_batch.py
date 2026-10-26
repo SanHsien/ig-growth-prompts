@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 
 from igprompts.batch import TopicItem, load_topic_queue, run_batch_queue
-from igprompts.providers import DryRunProvider
+from igprompts.providers import DryRunProvider, ManualProvider
 
 
 class TestBatch(unittest.TestCase):
@@ -66,6 +66,36 @@ class TestBatch(unittest.TestCase):
             self.assertEqual(results[0]["id"], "B1")
             self.assertTrue(Path(results[0]["manifest"]).exists())
             self.assertTrue(Path(results[1]["manifest"]).exists())
+
+    def test_manual_provider_handoff_is_isolated_per_topic(self):
+        items = [
+            TopicItem(id="B1", topic="t1", niche="AAA", series="faceless_carousel"),
+            TopicItem(id="B2", topic="t2", niche="BBB", series="faceless_carousel"),
+        ]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            handoff = Path(tmp_dir) / "handoff"
+            run_batch_queue(items, tmp_dir, provider=ManualProvider(handoff))
+            p1 = handoff / "B1_faceless_carousel" / "01-niche_ideation.prompt.md"
+            p2 = handoff / "B2_faceless_carousel" / "01-niche_ideation.prompt.md"
+            self.assertIn("AAA", p1.read_text(encoding="utf-8"))
+            self.assertIn("BBB", p2.read_text(encoding="utf-8"))
+
+    def test_duplicate_ids_rejected(self):
+        items = [TopicItem(id="X", topic="a"), TopicItem(id="X", topic="b")]
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            with self.assertRaises(ValueError):
+                run_batch_queue(items, tmp_dir, provider=DryRunProvider())
+            queue = Path(tmp_dir) / "q.json"
+            queue.write_text(json.dumps([{"id": "X", "topic": "a"}, {"id": "X", "topic": "b"}]), encoding="utf-8")
+            with self.assertRaises(ValueError):
+                load_topic_queue(queue)
+
+    def test_unsafe_ids_rejected(self):
+        for bad in ("../evil", "a/b", "a\b", "..", "C:x"):
+            with self.subTest(bad=bad), tempfile.TemporaryDirectory() as tmp_dir:
+                with self.assertRaises(ValueError):
+                    run_batch_queue([TopicItem(id=bad, topic="a")], tmp_dir, provider=DryRunProvider())
+                self.assertEqual([p.name for p in Path(tmp_dir).iterdir()], [])
 
 
 if __name__ == "__main__":

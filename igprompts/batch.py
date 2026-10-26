@@ -4,14 +4,36 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from .calendar import CalendarEntry
 from .core import normalize_series
-from .providers import DryRunProvider, WorkflowProvider
+from .providers import DryRunProvider, ManualProvider, WorkflowProvider
 from .workflow import WorkflowRunner, WorkflowState
+
+
+_UNSAFE_ID_RE = re.compile(r'[\/:*?"<>|\x00-\x1f]')
+
+
+def _validate_ids(items: list[TopicItem]) -> None:
+    """Item ids become directory names: reject path-unsafe and duplicate ids."""
+    seen: set[str] = set()
+    for item in items:
+        bad = (
+            not item.id
+            or _UNSAFE_ID_RE.search(item.id)
+            or item.id.startswith(".")
+            or item.id != item.id.strip()
+            or item.id.endswith(".")
+        )
+        if bad:
+            raise ValueError(f"Topic id {item.id!r} is not usable as a directory name.")
+        if item.id in seen:
+            raise ValueError(f"Duplicate topic id {item.id!r}: ids must be unique.")
+        seen.add(item.id)
 
 
 @dataclass
@@ -65,6 +87,7 @@ def load_topic_queue(file_path: str | Path) -> list[TopicItem]:
 
     if not items:
         raise ValueError("Topic queue is empty.")
+    _validate_ids(items)
     return items
 
 
@@ -74,6 +97,7 @@ def run_batch_queue(
     provider: WorkflowProvider | None = None,
 ) -> list[dict[str, Any]]:
     """Execute each topic in the queue through its respective series runner."""
+    _validate_ids(items)
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     results: list[dict[str, Any]] = []
@@ -89,10 +113,15 @@ def run_batch_queue(
         if item.extra:
             config.update(item.extra)
 
+        item_provider: WorkflowProvider = provider or DryRunProvider()
+        if isinstance(item_provider, ManualProvider):
+            # One handoff folder per topic, or topics overwrite each other's prompts and reuse each other's answers.
+            item_provider = ManualProvider(item_provider.handoff_dir / item_dir.name)
+
         runner = WorkflowRunner(
             config=config,
             series=item.series,
-            provider=provider or DryRunProvider(),
+            provider=item_provider,
         )
         runner.run_all(checkpoint_path=item_dir / "workflow_state.json")
         artifacts = runner.export_manifest(item_dir)
