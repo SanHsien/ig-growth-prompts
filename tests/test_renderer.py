@@ -72,5 +72,14 @@ class TestRenderer(unittest.TestCase):
                 render_slides_from_answer(answer, tmp_dir)
 
 
+    def test_spec_file_with_utf8_bom_renders(self):
+        # Windows Notepad / PowerShell can save UTF-8 with a BOM.
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            spec = Path(tmp_dir) / "spec.md"
+            spec.write_bytes(b"\xef\xbb\xbf# Cover\nbody\n\n---\n\n# Second\nbody\n")
+            files = render_slides_from_spec_file(spec, Path(tmp_dir) / "out")
+            self.assertEqual(len(files), 2)
+
+
 if __name__ == "__main__":
     unittest.main()

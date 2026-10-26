@@ -186,7 +186,7 @@ def render_slides(slides: list[SlideData], output_dir: str | Path) -> list[Path]
 
 
 def render_slides_from_spec_file(spec_path: str | Path, output_dir: str | Path) -> list[Path]:
-    text = Path(spec_path).read_text(encoding="utf-8")
+    text = Path(spec_path).read_text(encoding="utf-8-sig")
     block = extract_slides_block(text)
     return render_slides(parse_slide_spec(block if block is not None else text), output_dir)
 
