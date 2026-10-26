@@ -176,7 +176,9 @@ class TestCalendar(unittest.TestCase):
                     cells = [c for row in csvmod.reader(f) for c in row]
                 for cell in cells:
                     self.assertFalse(cell[:1] in ("=", "+", "@", "\t", "\r"), cell)
-                self.assertTrue(any(c.startswith("'=HYPERLINK") or "\n'=HYPERLINK" in c or c == "'" + payload for c in cells) or True)
+                self.assertTrue(any(c.startswith("'") for c in cells), cells)
+                if export is not export_buffer_csv:  # Buffer merges hook/title/caption into one Text cell
+                    self.assertIn("'" + payload, cells)
 
     def test_csv_safe_keeps_numbers_and_can_be_disabled(self):
         from igprompts.calendar import csv_safe
