@@ -75,5 +75,21 @@ class TestExperiments(unittest.TestCase):
                     load_ledger(csv_path)
 
 
+    def test_report_table_survives_pipes_and_newlines(self):
+        import re
+        header = "day,hypothesis,topic,hook,format,cta,primary_metric,views,saves,shares,comments,profile_visits,follows,avg_watch_pct"
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            csv_path = Path(tmp_dir) / "ledger.csv"
+            csv_path.write_text(
+                f'{header}\n1,"A | B\nsecond line",T,H,"Reel | Short",C,views,100,5,1,1,1,1,50\n',
+                encoding="utf-8-sig",
+            )
+            report = build_report(load_ledger(csv_path))
+        table = [ln for ln in report.splitlines() if ln.startswith("|")]
+        self.assertEqual(len(table), 3)  # header, separator, one data row
+        cells = [len(re.split(r"(?<!\\)\|", ln)) for ln in table]
+        self.assertEqual(len(set(cells)), 1, table)
+
+
 if __name__ == "__main__":
     unittest.main()

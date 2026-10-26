@@ -141,5 +141,25 @@ class TestCalendar(unittest.TestCase):
             self.assertEqual(entries[1].scheduled_date, "2026-11-12")
 
 
+    def test_markdown_table_survives_pipes_and_newlines(self):
+        import re
+        entry = CalendarEntry(
+            entry_id="E|1", scheduled_date="2026-11-01", scheduled_time="18:00", channel="IG Reels",
+            title="a | b\nc", hook="x | y\nz", caption="", media_asset="", status="Draft",
+        )
+        doc = export_markdown_calendar([entry])
+        table = [ln for ln in doc.splitlines() if ln.startswith("|")]
+        self.assertEqual(len(table), 3)
+        cells = [len(re.split(r"(?<!\\)\|", ln)) for ln in table]
+        self.assertEqual(len(set(cells)), 1, table)
+
+    def test_ledger_day_must_be_positive_integer(self):
+        from igprompts.experiments import ExperimentRow
+        fields = {"day": "", "hypothesis": "", "topic": "T", "hook": "", "format": "", "cta": "", "primary_metric": ""}
+        for bad in ("0", "D1", "-1", "1.5"):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                generate_calendar_from_ledger([ExperimentRow(day=bad, fields=fields)], start_date=date(2026, 11, 1))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -23,6 +23,11 @@ _SERIES_ALIASES = {
 }
 
 
+def md_cell(value: object) -> str:
+    """Make text safe inside one Markdown table cell: escape pipes, flatten line breaks."""
+    return " ".join(str(value).replace("|", "\\|").split())
+
+
 def normalize_series(series: str) -> str:
     key = (series or "").strip().lower()
     if key not in _SERIES_ALIASES:

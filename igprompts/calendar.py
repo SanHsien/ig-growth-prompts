@@ -16,6 +16,7 @@ from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
+from .core import md_cell
 from .experiments import ExperimentRow, load_ledger
 from .workflow import WorkflowState
 
@@ -52,7 +53,9 @@ def generate_calendar_from_ledger(
 
     entries: list[CalendarEntry] = []
     for row in ledger_rows:
-        day_num = int(row.day) if row.day.isdigit() else 1
+        if not (row.day.isascii() and row.day.isdecimal() and int(row.day) >= 1):
+            raise ValueError(f"Ledger day '{row.day}' must be a positive whole number.")
+        day_num = int(row.day)
         entry_date = curr_date + timedelta(days=day_num - 1)
         fmt = row.fields.get("format") or "Reels"
         channel = "IG Carousel" if "輪播" in fmt or "Carousel" in fmt else default_channel
@@ -251,8 +254,9 @@ def export_markdown_calendar(entries: list[CalendarEntry], output_path: str | Pa
     for e in entries:
         hook_display = e.hook[:20] + "..." if len(e.hook) > 20 else (e.hook or "—")
         lines.append(
-            f"| `{e.entry_id}` | {e.scheduled_date} | {e.scheduled_time} | {e.channel} | "
-            f"{e.title} | {hook_display} | `{e.status}` | `{e.target_metric}` |"
+            f"| `{md_cell(e.entry_id)}` | {md_cell(e.scheduled_date)} | {md_cell(e.scheduled_time)} | "
+            f"{md_cell(e.channel)} | {md_cell(e.title)} | {md_cell(hook_display)} | "
+            f"`{md_cell(e.status)}` | `{md_cell(e.target_metric)}` |"
         )
     lines.append("")
 

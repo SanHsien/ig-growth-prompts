@@ -15,6 +15,8 @@ import math
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from .core import md_cell
+
 TEXT_COLUMNS = ("day", "hypothesis", "topic", "hook", "format", "cta", "primary_metric")
 COUNT_COLUMNS = ("views", "saves", "shares", "comments", "profile_visits", "follows")
 PERCENT_COLUMNS = ("avg_watch_pct",)
@@ -141,8 +143,9 @@ def build_report(rows: list[ExperimentRow]) -> str:
     for r in rows:
         cells = " | ".join(_fmt(m, r.metric(m)) for m in METRICS)
         lines.append(
-            f"| {r.day} | {r.fields['hypothesis'] or '—'} | {r.fields['format'] or '—'} | "
-            f"{r.fields['primary_metric'] or '—'} | {cells} |"
+            f"| {md_cell(r.day)} | {md_cell(r.fields['hypothesis'] or '—')} | "
+            f"{md_cell(r.fields['format'] or '—')} | "
+            f"{md_cell(r.fields['primary_metric'] or '—')} | {cells} |"
         )
 
     lines += ["", "## 可以確定的結論（只比較有數據的支數）", ""]
