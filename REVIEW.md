@@ -69,6 +69,7 @@
 - `6324091`、`9ca68aa`：帶 BOM 的 slide 規格檔與 manual 回覆檔
 - `5d97b2c`：Markdown 表格欄位含 `|`／換行；ledger day 為 0、D1 等無效值
 - `9a48a6d`：GUI 無設定指令時產生假回答、排程 .bat 路徑未加引號、日曆匯出 ID 重複
+- `18405f4`：CSV 匯出未防公式注入（`=HYPERLINK(...)` 等原樣輸出；主管-3 決定加單引號前綴）
 
 ## 4. 自動化測試與品質閘門驗證 (Verification Evidence)
 
