@@ -91,7 +91,7 @@ class TestBatch(unittest.TestCase):
                 load_topic_queue(queue)
 
     def test_unsafe_ids_rejected(self):
-        for bad in ("../evil", "a/b", "a\b", "..", "C:x"):
+        for bad in ("../evil", "a/b", r"a\b", r"..\evil", r"x\..\..\evil", "..", "C:x", "NUL", "con.txt"):
             with self.subTest(bad=bad), tempfile.TemporaryDirectory() as tmp_dir:
                 with self.assertRaises(ValueError):
                     run_batch_queue([TopicItem(id=bad, topic="a")], tmp_dir, provider=DryRunProvider())

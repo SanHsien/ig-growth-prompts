@@ -15,7 +15,8 @@ from .providers import DryRunProvider, ManualProvider, WorkflowProvider
 from .workflow import WorkflowRunner, WorkflowState
 
 
-_UNSAFE_ID_RE = re.compile(r'[\/:*?"<>|\x00-\x1f]')
+_UNSAFE_ID_RE = re.compile(r'[\\/:*?"<>|\x00-\x1f]')
+_RESERVED_NAMES = {"CON", "PRN", "AUX", "NUL", *(f"COM{i}" for i in range(1, 10)), *(f"LPT{i}" for i in range(1, 10))}
 
 
 def _validate_ids(items: list[TopicItem]) -> None:
@@ -28,6 +29,7 @@ def _validate_ids(items: list[TopicItem]) -> None:
             or item.id.startswith(".")
             or item.id != item.id.strip()
             or item.id.endswith(".")
+            or item.id.split(".")[0].upper() in _RESERVED_NAMES
         )
         if bad:
             raise ValueError(f"Topic id {item.id!r} is not usable as a directory name.")
