@@ -59,6 +59,17 @@
 
 ---
 
+### 3.4 第二輪深度掃描（2026-10-26）
+
+每項皆先寫會失敗的重現測試再修：
+
+- `1044b0b`、`5d1c59e`：批次 manual provider 各主題共用 handoff 目錄；主題 id 重複／含路徑字元（含反斜線、Windows 保留名）
+- `16d93ca`：數據表接受 nan／inf
+- `77b596f`：`get_prompt("²")` 丟 ValueError
+- `6324091`、`9ca68aa`：帶 BOM 的 slide 規格檔與 manual 回覆檔
+- `5d97b2c`：Markdown 表格欄位含 `|`／換行；ledger day 為 0、D1 等無效值
+- `9a48a6d`：GUI 無設定指令時產生假回答、排程 .bat 路徑未加引號、日曆匯出 ID 重複
+
 ## 4. 自動化測試與品質閘門驗證 (Verification Evidence)
 
 執行本機標準化品質閘門：
