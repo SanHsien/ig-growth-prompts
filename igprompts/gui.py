@@ -23,11 +23,13 @@ from .calendar import (
     export_buffer_csv,
     export_markdown_calendar,
     export_notion_csv,
-    generate_calendar_from_workflow_state,
+    generate_calendar_from_batch_dir,
 )
 from .core import SERIES_FACELESS, SERIES_REELS
 from .providers import CommandProvider, DryRunProvider, ManualProvider
-from .workflow import WorkflowRunner, WorkflowState
+from .workflow import WorkflowRunner
+
+COMMAND_ENV = "IGPROMPTS_LLM_CMD"
 
 # Lazy-import tkinter & winreg
 try:
@@ -80,6 +82,34 @@ THEMES: dict[str, dict[str, str]] = {
         "entry_fg": "#0f172a",
     },
 }
+
+
+def build_command_provider() -> CommandProvider:
+    """CLI provider for the GUI. No command configured is an error, never a fake answer."""
+    command = os.environ.get(COMMAND_ENV, "").strip()
+    if not command:
+        raise ValueError(f"尚未設定外部指令：請設定環境變數 {COMMAND_ENV}，或改用 manual／dry-run。")
+    return CommandProvider(command=command)
+
+
+def build_scheduler_script(out_base: Path, cwd: Path) -> str:
+    """Windows batch file for Task Scheduler. Paths are quoted; chcp keeps UTF-8 text intact."""
+    return f"""@echo off
+chcp 65001 >nul
+REM ========================================================
+REM IG Growth Prompts - 本機定時排程執行批次腳本
+REM ========================================================
+set PYTHONIOENCODING=utf-8
+cd /d "{cwd}"
+
+echo [IG Prompts] 正在執行主題隊列...
+python -m igprompts batch run -f examples/sample_topics_queue.json -o "{out_base}" --provider dry-run
+
+echo [IG Prompts] 正在彙整全渠道發布日曆...
+python -m igprompts calendar generate --from-batch "{out_base}" --format all -o "{out_base}/calendar_export"
+
+echo [IG Prompts] 排程推進完成！
+"""
 
 
 class IGPromptsGUI:
@@ -372,7 +402,7 @@ class IGPromptsGUI:
                 elif prov_type == "manual":
                     provider = ManualProvider(s_out / "handoff")
                 else:
-                    provider = CommandProvider(command=os.environ.get("IGPROMPTS_LLM_CMD", "echo [Mock LLM]"))
+                    provider = build_command_provider()
 
                 config = {
                     "niche": niche,
@@ -412,16 +442,12 @@ class IGPromptsGUI:
     def _export_calendar(self, fmt: str) -> None:
         try:
             out_base = Path(self.ent_out.get().strip() or "gui_output")
-            state_files = list(out_base.glob("*/workflow_state.json"))
-            if not state_files:
+            if not any(out_base.glob("*/workflow_state.json")):
                 messagebox.showwarning("提示", f"在 {out_base} 找不到任何工作流狀態！請先執行工作流。")
                 return
 
-            entries = []
-            start_date = self.ent_cal_date.get().strip()
-            for sf in state_files:
-                st = WorkflowState.load_checkpoint(sf)
-                entries.extend(generate_calendar_from_workflow_state(st, start_date=start_date))
+            # One entry per series with unique ids and consecutive dates.
+            entries = generate_calendar_from_batch_dir(out_base, self.ent_cal_date.get().strip())
 
             exp_dir = out_base / "calendar_export"
             exp_dir.mkdir(parents=True, exist_ok=True)
@@ -446,21 +472,7 @@ class IGPromptsGUI:
     def _generate_scheduler_script(self) -> None:
         out_base = Path(self.ent_out.get().strip() or "gui_output")
         script_path = Path("run_scheduled_pipeline.bat")
-        script_content = f"""@echo off
-REM ========================================================
-REM IG Growth Prompts - 本機定時排程執行批次腳本
-REM ========================================================
-set PYTHONIOENCODING=utf-8
-cd /d "{Path.cwd()}"
-
-echo [IG Prompts] 正在執行主題隊列...
-python -m igprompts batch run -f examples/sample_topics_queue.json -o {out_base} --provider dry-run
-
-echo [IG Prompts] 正在彙整全渠道發布日曆...
-python -m igprompts calendar generate --from-batch {out_base} --format all -o {out_base}/calendar_export
-
-echo [IG Prompts] 排程推進完成！
-"""
+        script_content = build_scheduler_script(out_base, Path.cwd())
         script_path.write_text(script_content, encoding="utf-8")
         self.txt_sched_preview.delete("1.0", tk.END)
         self.txt_sched_preview.insert(tk.END, script_content)
