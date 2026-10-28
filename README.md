@@ -77,10 +77,12 @@ ig-growth-prompts/
 │   ├── workflows/
 │   │   ├── ci.yml                      # 跨平台 CI 測試與品質閘門
 │   │   ├── codeql.yml                  # CodeQL 靜態安全分析掃描
+│   │   ├── dependency-freshness.yml    # 每月比對宣告的依賴下限與現行版
 │   │   ├── batch_schedule.yml          # GitHub Actions 排程定時推進隊列
 │   │   └── release_gui.yml             # 自動化發布與二進位資產構建
 │   ├── CODEOWNERS                      # 程式碼審查所有權設定
 │   ├── dependabot.yml                  # Actions 依賴每週自動檢查
+│   ├── dependency-deferrals.json       # 已評估、暫不升級的依賴（附理由）
 │   └── PULL_REQUEST_TEMPLATE.md        # PR 提交規範與自我檢查表
 ├── .editorconfig                       # 縮排與編碼規範 (UTF-8, LF)
 ├── .gitattributes                      # Git 換行統一規範 (eol=lf)
@@ -135,10 +137,11 @@ ig-growth-prompts/
 │   ├── sample_topics_queue.json        # 批次佇列 JSON 範例
 │   ├── sample_topics_queue.csv         # 批次佇列 CSV 範例
 │   └── sample_slides.md                # 輪播圖卡規格範例
-├── tests/                              # 純標準庫單元測試套件 (49 個測試全綠燈)
+├── tests/                              # 純標準庫單元測試套件 (73 個測試全綠燈)
 │   ├── test_batch.py                   # 批次佇列排程與執行測試
 │   ├── test_calendar.py                # 發布行事曆多格式匯出測試
 │   ├── test_cli.py                     # CLI 全命令介面測試
+│   ├── test_dependency_freshness.py    # 依賴新鮮度檢查器行為測試
 │   ├── test_experiments.py             # 7 天測試帳本與指標試算測試
 │   ├── test_gui.py                     # Tkinter 桌面主題與啟動測試
 │   ├── test_prompts.py                 # 提示詞定義與變數渲染測試
@@ -146,6 +149,7 @@ ig-growth-prompts/
 │   └── test_workflow.py                # 狀態機與中立 Provider 流程測試
 └── tools/                              # 工程維護、自動建置與品質閘門
     ├── build_exe.ps1                   # PyInstaller 免安裝單檔與 Inno Setup 建置腳本
+    ├── check_dependency_freshness.py   # 依賴下限新鮮度報告（PyPI、GitHub Releases）
     ├── check_links.py                  # Markdown 相對連結離線檢查
     ├── dev_check.ps1                   # Windows 原生 Canonical Quality Gate
     ├── installer.iss                   # Inno Setup Windows 安裝程式規格
@@ -319,9 +323,11 @@ pwsh -File tools/dev_check.ps1
 ```
 
 執行項目包括：
-1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（49 個單元測試）
+1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（73 個單元測試）
 2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與錨點）
 3. **Git 空白與換行檢查**：`git diff --check`
+
+依賴新鮮度另由 [Dependency freshness](.github/workflows/dependency-freshness.yml) 每月檢查：`python tools/check_dependency_freshness.py --strict` 比對 `pyproject.toml` 建置需求與 workflow 中 Actions 的宣告下限。刻意保留的下限在該行加 `# freshness-hold: <理由>`；已評估但暫不升級的寫進 `.github/dependency-deferrals.json`（`deferredLatest`＋`reason`）。調高下限不是消紅燈的方法。
 
 ---
 

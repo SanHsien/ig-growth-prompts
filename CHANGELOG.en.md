@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- **Dependency freshness check**: new `tools/check_dependency_freshness.py` and a monthly `dependency-freshness.yml` compare the declared floors (the `pyproject.toml` build requirements and the Actions in the workflows) with current releases; an aged floor or a failed lookup turns the run red and lists open Dependabot PRs. `setuptools>=61.0` carries a `# freshness-hold`: it is the real compatibility floor (61.0 is the first release that reads `[project]`; 60.10 builds `UNKNOWN-0.0.0`). Reviewed-but-postponed updates go in `.github/dependency-deferrals.json`.
 - **GitHub Actions Dependencies Upgrade**: Merged Dependabot PR #2, bumping `github/codeql-action` in `codeql.yml` from v3 to v4.
 - **Private-Repo CodeQL Template Sync**: Bumped `github/codeql-action/init` and `analyze` in `tools/ci-templates/codeql-private.yml` to v4 (Dependabot does not scan `tools/`, so this must be tracked manually).
 

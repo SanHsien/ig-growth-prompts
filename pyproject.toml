@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0"]  # freshness-hold: 61.0 is the first setuptools that reads [project] (PEP 621); 60.10 builds UNKNOWN-0.0.0 -- the real compatibility floor, build isolation installs the latest anyway
 build-backend = "setuptools.build_meta"
 
 [project]
