@@ -1,102 +1,37 @@
-[English](ROADMAP.en.md) | 中文版
+# 路線圖
 
-# 自動化工作流演進路線圖 (Workflow Automation Roadmap)
+> 本 repo 後續工作的單一真相源。做完一項，就在同一個 commit 刪掉那一列；新工作只加在這裡。
+> 現況段的數字是 2026-10-29 依 `main` `33e96e826bb9` 查的快照，開工前先重查 GitHub。
 
-本專案旨在將社群成長體系，演進為一套**工具中立（Model & Agent Agnostic）、純本機、可擴展且具備嚴謹工程治理**的自動化內容生產管線。
+## 現況
 
-不限制使用者使用哪一個 AI 工具：無論你慣用 Claude、ChatGPT、Gemini、DeepSeek、本地 Ollama 還是自建 Agent，所有 Prompt 均為標準化純文字，工作流引擎支援手動交接、命令列管線串接與 Python 函式。
+本 repo 是工具中立、純標準庫的 Instagram 提示詞與本機內容工作流，含 GUI、批次處理與日曆匯出（`AGENTS.md:7-12`、`README.md:44-66`）。2026-10-29 快照中 open issue／PR、Dependabot／code scanning 告警均為 0，CI、CodeQL、Dependency freshness 與排程批次最近結果為 success（2026-10-29 `gh` 查詢，`33e96e826bb9`）；深掃仍保留檢查點中斷風險與批次失敗策略取捨（深掃報告，2026-10-26，〈刻意不修〉）。
 
-```
-[Prompt 知識庫：全局統一編號 01 ~ 12]
-       │
-       ├─ Series 1: 圖文與不露臉精準留存體系 (Prompts 01 ~ 05)
-       └─ Series 2: 短影音爆款與假設驗證體系 (Prompts 06 ~ 12)
-       │
-       ▼
-[Phase 1: 工具中立工作流引擎] ◀── 已實作 (v0.3.0)
-  - 狀態機 (pending -> running -> completed | awaiting_response | failed)
-  - 檢查點儲存與斷點續跑 (Checkpoint & Resume)
-  - 多元 Provider 支援：
-    • ManualProvider：輸出 Markdown 檔案，供任何聊天介面複製貼上
-    • CommandProvider：以 stdin/stdout 串接任何本機 CLI (如 ollama, llm, claude)
-    • CallableProvider：串接自訂 Python 函式或 API
-    • DryRunProvider：離線驗證，明確標記 marker，不作假內容
-       │
-       ▼
-[Phase 2: 純本地圖卡與視覺排版引擎] ◀── 已實作 (v0.3.0)
-  - 零相依純標準庫 SVG 產生器 (1080x1350 Instagram 4:5 規格)
-  - 解析 AI 回覆中的 ```slides 區塊，按規格繪製，無規格時明確認錯
-       │
-       ▼
-[Phase 3: 7 天測試帳本與復盤閉環] ◀── 已實作 (v0.3.0)
-  - Prompt 12 排出測試表 -> `experiment plan` 產生 CSV 帳本
-  - 創作者填入實際後台數據 -> `experiment report` 計算各項指標與排名
-  - 自動生成「可確定的結論」與「數據看不出來的盲點」
-  - 一鍵填入 Prompt 10（復盤與重寫），完成成長閉環
-       │
-       ▼
-[Phase 4: 多渠道發布與主題庫批次執行] ◀── 已實作 (v0.4.0)
-  - 內容發布日曆引擎 (`igprompts/calendar.py`)
-  - 支援 Notion Database、Airtable、Buffer (CSV) 與 Markdown 視覺排程表
-  - 主題庫隊列批次處理器 (`igprompts/batch.py`)：支援 JSON / CSV 隊列批量推進
-       │
-       ▼
-[Phase 5: 雲端排程與 Webhook 生態整合] ◀── 部分實作 (v0.5.0)
-  - 支援 GitHub Actions Schedule (cron) 自動推進批次隊列 (.github/workflows/batch_schedule.yml)
-  - 支援從整個批次輸出直接彙整全渠道發布日曆 (`calendar generate --from-batch`)
-  - (未來展望) 支援 Webhook 觸發（如 Zapier / Make / n8n）與社群發布通知
-       │
-       ▼
-[Phase 6: 免安裝桌面 GUI 與雙模安裝檔發布] ◀── 已實作 (v0.6.0)
-  - 桌面工作台 (`igprompts/gui.py`)：三種 UI 主題（深色、淺色、跟隨系統）
-  - 支援單選（系列 1、系列 2）或同時執行兩套，整合本地排程器與日曆匯出
-  - 語意式命名（SemVer）雙模發布：免安裝單檔 (.exe) 與 Inno Setup 安裝檔 (.exe)
-  - GitHub Actions 雲端自動編譯工作流 (`.github/workflows/release_gui.yml`)
-```
+## 近期：可以直接動手
 
----
+| 項目 | 為什麼 | 驗收方式 | 建議執行者 | 證據 |
+| --- | --- | --- | --- | --- |
+| 檢查點改為同目錄暫存檔加原子替換 | 目前直接覆寫 JSON，中斷可能破壞續跑狀態 | 加入寫入／替換失敗注入測試，失敗後舊狀態仍能解析並以 `--resume` 續跑；`pwsh -File tools/dev_check.ps1` 通過 | Codex | `igprompts/workflow.py:77`；深掃報告（2026-10-26）〈刻意不修〉 |
+| 把英文路線圖對照頁與本檔對齊 | `ROADMAP.en.md` 仍是舊的 Phase 版，開頭寫「English／中文版」語言切換並連到 ROADMAP.md；`README.md:99` 仍把 ROADMAP 描述成「自動化工作流演進路線圖」，`README.md:100`、`README.en.md:29,65,249` 也指向英文舊版，與本檔互相矛盾 | `ROADMAP.en.md` 改成本檔的英文對照，或改成只連到 ROADMAP.md 的短頁；同步改 `README.md:67,99-100,350`、`README.en.md:29,65,249` 的描述；兩份 README 不再把 ROADMAP 描述成演進史，`python tools/check_links.py` 通過 | Claude Haiku | `ROADMAP.en.md:1-5`、`README.md:99-100` |
+| 補 Windows GUI 正常操作驗收 | 深掃未開視窗，尚不能代表桌面使用路徑已實測 | 在 Windows 原生 GUI 以單一測試主題走 manual 回覆、續跑、日曆匯出及含空白路徑的排程腳本；記錄結果與 SHA，不呼叫遠端 API | 維護者 | 深掃報告（2026-10-26）範圍說明；`REVIEW.md:71`；`README.md`〈桌面 GUI 工作台〉 |
 
-## 階段劃分與最新實作狀態
+## 中期：等條件成立再做
 
-### Phase 1: 工具中立工作流引擎 (已完成 v0.3.0)
-- **核心模組**：`igprompts/providers.py`、`igprompts/workflow.py`
-- **特點**：
-  - 徹底消除特定模型綁定。
-  - 支援手動交接模式（`ManualProvider`）：自動在 `handoff/` 產出提示詞與等待回覆檔案，可與任何網頁或 App 協作。
-  - 支援命令列管道模式（`CommandProvider`）：透過 `IGPROMPTS_LLM_CMD` 環境變數或 `--cmd` 參數直接管線呼叫任何終端工具。
+| 項目 | 觸發條件 | 驗收方式 | 建議執行者 | 證據 |
+| --- | --- | --- | --- | --- |
+| Webhook 觸發與通知的明確介面 | 維護者選定 Zapier／Make／n8n 其中一個用途並授權外部連線 | 先定義輸入、認證、重送去重與離線預設；本機模擬成功、拒絕及重送，核准後才驗證一次外部通知 | Claude Opus | 接續開發報告（2026-10-25）〈刻意不做／延後〉；`AGENTS.md:11-12` |
+| 定義批次失敗後的部分結果保留策略 | 出現需要保留前段成果、繼續其餘主題的實際案例 | 先記錄 fail-fast／continue 選擇；以中間主題失敗驗證 manifest、錯誤摘要與續跑不重複已完成主題 | Claude Sonnet | 深掃報告（2026-10-26）〈刻意不修〉；`igprompts/batch.py:128-136` |
+| 固定 GUI 建置工具版本 | 維護者要求建置環境可重現或出現打包回歸 | 記錄 Python、PyInstaller 與安裝器版本；乾淨 Windows 環境產出 portable／setup 並各啟動一次 | Codex | `.github/workflows/release_gui.yml:74`；接續開發報告（2026-10-25）〈刻意不做／延後〉 |
 
-### Phase 2: 純本地圖卡渲染 (已完成 v0.3.0)
-- **核心模組**：`igprompts/renderer.py`
-- **特點**：
-  - 純 Python 標準庫實現，輸出 1080x1350 向量圖卡。
-  - 圖卡內容完全來自 AI 或創作者的真實規格（````slides` 標籤），杜絕假資料。
+## 刻意不做
 
-### Phase 3: 7 天測試帳本與復盤 (已完成 v0.3.0)
-- **核心模組**：`igprompts/experiments.py`
-- **特點**：
-  - 連結 Prompt 12（測試排程）與 Prompt 10（數據診斷與重寫）。
-  - CSV 支援 UTF-8 BOM，在 Windows Excel 中開啟不亂碼。
-  - 空白數據保留為未測（`—`），絕不擅自填 0，維持實證原則。
+| 不做什麼 | 理由 | 什麼情況下重新考慮 |
+| --- | --- | --- |
+| 為通過稽核壓縮歷史或強推 | 保留 release tag 與歷史關係；已有保留歷史的決定，見 `CHANGELOG.md:15` | 維護者明確要求並另行評估歷史與 release 影響 |
+| 核心加入第三方套件或預設遠端模型呼叫 | 違反核心純標準庫、本機運作的界線 | 維護者明確變更 `AGENTS.md` 的產品限制 |
+| 把 dry-run 日曆當成正式發布或自動發文 | dry-run 是明確標示的展示輸出；現有工作流主要產生本機產物 | 確有發布需求，並先定義確認、憑證與誤發布防護 |
 
-### Phase 4: 多渠道發布與主題庫批次執行 (已完成 v0.4.0)
-- **核心模組**：`igprompts/calendar.py`、`igprompts/batch.py`
-- **特點**：
-  - **多渠道發布日曆**：可由 7 天測試帳本（Prompt 12）、單一工作流狀態或批次目錄直接衍生發布日曆，支援匯出 Notion Database、Airtable Content Calendar、Buffer 排程 CSV 及 Markdown 表格。
-  - **主題庫批次推進**：可讀取 JSON 或 CSV 主題清單（`examples/sample_topics_queue.json`、`sample_topics_queue.csv`），依所屬系列自動批次執行管線並分別留存檢查點與清單。
+## 維護方式
 
-### Phase 5: 雲端排程與 Webhook 整合 (v0.5.0 部分完成)
-- **GitHub Actions 定時排程 (`.github/workflows/batch_schedule.yml`)**：
-  - 支援 `schedule: cron` 每日定時自動執行批次隊列。
-  - 支援 `workflow_dispatch` 手動觸發並自訂參數（隊列路徑、provider、是否產生發布日曆）。
-  - 自動產出多渠道 Content Calendar、輸出 Markdown 執行摘要至 `$GITHUB_STEP_SUMMARY` 並上傳 Artifacts。
-- **未來展望**：支援與 Zapier / Make / n8n 等自動化中樞透過 Webhook 串接。
-
-### Phase 6: 免安裝桌面 GUI 與雙模安裝檔發布 (已完成 v0.6.0)
-- **核心模組**：`igprompts/gui.py`、`tools/build_exe.ps1`、`tools/installer.iss`、`.github/workflows/release_gui.yml`
-- **特點**：
-  - **三種風格主題**：深色（Dark）、淺色（Light）、跟隨系統（原生讀取 Windows 11 `AppsUseLightTheme` 登錄表）。
-  - **靈活執行系列**：可單選系列 1（圖文不露臉）、單選系列 2（短影音 Reels）、或兩者同時勾選循序推進。
-  - **語意式版本發布（SemVer）**：
-    - 免安裝單檔：`igprompts-gui-vX.Y.Z-portable.exe`
-    - Setup 安裝檔：`igprompts-setup-vX.Y.Z.exe`（整合 Inno Setup，支援桌面捷徑與開始功能表）
-  - **雲端自動編譯工作流**：每次發布 tag 或手動觸發時，由 GitHub Actions 在 Windows 環境編譯並上傳 Release Assets。
+每月查看 Dependency freshness；開工以 `gh pr list --repo SanHsien/ig-growth-prompts` 與 `gh api repos/SanHsien/ig-growth-prompts/dependabot/alerts?state=open` 重查，保留下限理由見 `pyproject.toml:2`。
+功能或修復發版前跑 `pwsh -File tools/dev_check.ps1`，依 repo 規範同步中英說明與變更紀錄；其他文件只連結本路線圖，不另列後續計畫。

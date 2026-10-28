@@ -39,3 +39,7 @@ pwsh -File tools/dev_check.ps1
 ```
 
 驗證全部通過才提交。直接推 `main`，不開分支、不開 PR。PR、push、release 一律只打 `SanHsien/ig-growth-prompts`，不打到任何上游或無關帳號。
+
+## 路線圖
+
+- `ROADMAP.md` 是本 repo 後續工作的單一真相源。完成或新增工作時，在同一個 commit 更新它：做完的列刪掉、新工作加進去。不要在其他文件另列待辦。
