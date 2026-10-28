@@ -224,7 +224,7 @@ All modifications must pass the Windows Canonical Quality Gate:
 pwsh -File tools/dev_check.ps1
 ```
 
-Verification includes 73 unit tests, full Markdown link validation, and git diff whitespace hygiene.
+Verification includes 74 unit tests, full Markdown link validation, and git diff whitespace hygiene.
 
 Dependency freshness is checked monthly by [Dependency freshness](.github/workflows/dependency-freshness.yml): `python tools/check_dependency_freshness.py --strict` compares the declared floors of the `pyproject.toml` build requirements and the workflow Actions with current releases. A floor kept on purpose carries `# freshness-hold: <reason>` on its line; an update reviewed but postponed goes in `.github/dependency-deferrals.json` (`deferredLatest` + `reason`). Raising a floor is not a way to turn the report green.
 

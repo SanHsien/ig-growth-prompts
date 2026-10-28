@@ -35,3 +35,6 @@ run_out/
 # OS Generated
 .DS_Store
 Thumbs.db
+
+# Local output of tools/check_dependency_freshness.py
+dependency-freshness-report.md

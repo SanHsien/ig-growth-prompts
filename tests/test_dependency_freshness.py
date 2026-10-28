@@ -32,6 +32,10 @@ class TestBuildRequires(unittest.TestCase):
         rows = checker.parse_build_requires(text)
         self.assertEqual([(r["name"], r["minimum"], r["hold"]) for r in rows], [("setuptools", "61.0", "PEP 621"), ("wheel", "0.40", "")])
 
+    def test_an_entry_with_extras_does_not_end_the_array(self):
+        text = '[build-system]\nrequires = [\n  "pkg[extra]>=1",\n  "setuptools>=61.0",\n]\n'
+        self.assertEqual([r["name"] for r in checker.parse_build_requires(text)], ["pkg", "setuptools"])
+
     def test_an_aged_floor_needs_review(self):
         [row] = status(checker.parse_build_requires('[build-system]\nrequires = ["setuptools>=61.0"]\n'), "84.2.1")
         self.assertTrue(checker.needs_review(row))

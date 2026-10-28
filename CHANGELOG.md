@@ -12,7 +12,7 @@
 
 ### 變更
 
-- **依賴新鮮度檢查**：新增 `tools/check_dependency_freshness.py` 與每月執行的 `dependency-freshness.yml`，比對 `pyproject.toml` 建置需求與 workflow 裡 Actions 的宣告下限和現行版；失敗或過期會讓工作流程變紅並列出 Dependabot PR。`setuptools>=61.0` 以 `# freshness-hold` 標明是真正的相容下限（61.0 才讀得到 `[project]`；實測 60.10 建出 `UNKNOWN-0.0.0`）。暫不升級的項目記在 `.github/dependency-deferrals.json`。
+- **依賴新鮮度檢查**：新增 `tools/check_dependency_freshness.py` 與每月執行的 `dependency-freshness.yml`，比對 `pyproject.toml` 建置需求與 workflow 裡 Actions 的宣告下限和現行版；下限過期、查詢失敗或有未合併的 Dependabot PR 都會讓工作流程變紅，報告列出這些 PR。`setuptools>=61.0` 以 `# freshness-hold` 標明是真正的相容下限（61.0 才讀得到 `[project]`；實測 60.10 建出 `UNKNOWN-0.0.0`）。暫不升級的項目記在 `.github/dependency-deferrals.json`。
 - **GitHub Actions 依賴升級**：合併 Dependabot PR #2，`codeql.yml` 的 `github/codeql-action` 由 v3 升至 v4。
 - **私有倉庫 CodeQL 範本同步**：`tools/ci-templates/codeql-private.yml` 的 `github/codeql-action/init` 與 `analyze` 同步升至 v4（Dependabot 不掃描 `tools/` 目錄，需手動跟進）。
 

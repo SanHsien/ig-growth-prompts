@@ -152,7 +152,8 @@ def parse_build_requires(text: str, source: str = PYPROJECT) -> list[dict[str, s
             continue
         comment = comment.strip()
         entries.extend(f"{entry}  # {comment}" if comment else entry for entry in _QUOTED_RE.findall(code))
-        if "]" in code:
+        # Only a bracket outside the quoted entries closes the array ("pkg[extra]>=1" is one entry).
+        if "]" in _QUOTED_RE.sub("", code):
             inside = False
     return parse_requirements("\n".join(entries), source)
 

@@ -137,7 +137,7 @@ ig-growth-prompts/
 │   ├── sample_topics_queue.json        # 批次佇列 JSON 範例
 │   ├── sample_topics_queue.csv         # 批次佇列 CSV 範例
 │   └── sample_slides.md                # 輪播圖卡規格範例
-├── tests/                              # 純標準庫單元測試套件 (73 個測試全綠燈)
+├── tests/                              # 純標準庫單元測試套件 (74 個測試全綠燈)
 │   ├── test_batch.py                   # 批次佇列排程與執行測試
 │   ├── test_calendar.py                # 發布行事曆多格式匯出測試
 │   ├── test_cli.py                     # CLI 全命令介面測試
@@ -323,7 +323,7 @@ pwsh -File tools/dev_check.ps1
 ```
 
 執行項目包括：
-1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（73 個單元測試）
+1. **單元測試**：`python -m unittest discover -s tests -p "test_*.py" -v`（74 個單元測試）
 2. **連結檢查**：`python tools/check_links.py`（驗證所有 Markdown 相對連結與錨點）
 3. **Git 空白與換行檢查**：`git diff --check`
 
