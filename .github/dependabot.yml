@@ -1,3 +1,4 @@
+# fleet-waiver: multi-commit -- 保留歷史：壓縮必須 force push，本輪不做（Release v0.6.1 的 tag 也指向歷史 commit）；觸發條件：維護者明確要求壓縮
 version: 2
 updates:
   - package-ecosystem: "github-actions"

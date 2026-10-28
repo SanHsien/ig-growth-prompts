@@ -12,6 +12,7 @@
 
 ### 變更
 
+- **保留提交歷史**：`.github/dependabot.yml` 加 `fleet-waiver: multi-commit`，理由是壓縮歷史必須 force push（Release `v0.6.1` 的 tag 也指向歷史 commit）；只有維護者明確要求壓縮時才重新評估。
 - **依賴新鮮度檢查**：新增 `tools/check_dependency_freshness.py` 與每月執行的 `dependency-freshness.yml`，比對 `pyproject.toml` 建置需求與 workflow 裡 Actions 的宣告下限和現行版；下限過期、查詢失敗或有未合併的 Dependabot PR 都會讓工作流程變紅，報告列出這些 PR。`setuptools>=61.0` 以 `# freshness-hold` 標明是真正的相容下限（61.0 才讀得到 `[project]`；實測 60.10 建出 `UNKNOWN-0.0.0`）。暫不升級的項目記在 `.github/dependency-deferrals.json`。
 - **GitHub Actions 依賴升級**：合併 Dependabot PR #2，`codeql.yml` 的 `github/codeql-action` 由 v3 升至 v4。
 - **私有倉庫 CodeQL 範本同步**：`tools/ci-templates/codeql-private.yml` 的 `github/codeql-action/init` 與 `analyze` 同步升至 v4（Dependabot 不掃描 `tools/` 目錄，需手動跟進）。
