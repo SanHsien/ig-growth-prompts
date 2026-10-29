@@ -5,13 +5,12 @@
 
 ## 現況
 
-本 repo 是工具中立、純標準庫的 Instagram 提示詞與本機內容工作流，含 GUI、批次處理與日曆匯出（`AGENTS.md:7-12`、`README.md:44-66`）。2026-10-29 快照中 open issue／PR、Dependabot／code scanning 告警均為 0，CI、CodeQL、Dependency freshness 與排程批次最近結果為 success（2026-10-29 `gh` 查詢，`33e96e826bb9`）；深掃仍保留檢查點中斷風險與批次失敗策略取捨（深掃報告，2026-10-26，〈刻意不修〉）。
+本 repo 是工具中立、純標準庫的 Instagram 提示詞與本機內容工作流，含 GUI、批次處理與日曆匯出（`AGENTS.md:7-12`、`README.md:44-66`）。2026-10-29 快照中 open issue／PR、Dependabot／code scanning 告警均為 0，CI、CodeQL、Dependency freshness 與排程批次最近結果為 success（2026-10-29 `gh` 查詢，`33e96e826bb9`）。本輪已將檢查點改為同目錄暫存檔加原子替換，並以寫入／替換失敗注入測試驗證舊狀態與 `--resume`；批次失敗策略取捨仍保留（深掃報告，2026-10-26，〈刻意不修〉）。
 
 ## 近期：可以直接動手
 
 | 項目 | 為什麼 | 驗收方式 | 建議執行者 | 證據 |
 | --- | --- | --- | --- | --- |
-| 檢查點改為同目錄暫存檔加原子替換 | 目前直接覆寫 JSON，中斷可能破壞續跑狀態 | 加入寫入／替換失敗注入測試，失敗後舊狀態仍能解析並以 `--resume` 續跑；`pwsh -File tools/dev_check.ps1` 通過 | Codex | `igprompts/workflow.py:77`；深掃報告（2026-10-26）〈刻意不修〉 |
 | 補 Windows GUI 正常操作驗收 | 深掃未開視窗，尚不能代表桌面使用路徑已實測 | 在 Windows 原生 GUI 以單一測試主題走 manual 回覆、續跑、日曆匯出及含空白路徑的排程腳本；記錄結果與 SHA，不呼叫遠端 API | 維護者 | 深掃報告（2026-10-26）範圍說明；`REVIEW.md:71`；`README.md`〈桌面 GUI 工作台〉 |
 
 ## 中期：等條件成立再做

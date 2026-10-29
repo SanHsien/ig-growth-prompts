@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Atomic checkpoint writes**: Write to a temporary file in the same directory, flush/fsync and close it, then atomically replace the JSON checkpoint. Write or replacement failures preserve the previous checkpoint and remove the temporary file. Regression tests inject partial-write and replacement failures, verify that the previous state remains readable, and exercise `--resume` without repeating completed steps.
+
 ### Security
 
 - **CSV formula-injection guard**: Notion/Airtable/Buffer exports prefix cells starting with `=`, `+`, `-`, `@`, Tab or CR with a single quote (OWASP guidance); plain numbers, including negatives, are untouched. Disable with `calendar generate --no-csv-sanitize` or `sanitize=False`.

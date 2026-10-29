@@ -8,9 +8,11 @@ the run stops there and ``--resume`` continues once the answer exists.
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import Any
 
 from .core import get_prompt, list_prompts, normalize_series, render_prompt
@@ -74,7 +76,21 @@ class WorkflowState:
         self.updated_at = _utc_now_iso()
         p = Path(path)
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(json.dumps(self.to_dict(), ensure_ascii=False, indent=2), encoding="utf-8")
+        temporary_path = None
+        try:
+            with NamedTemporaryFile(
+                mode="w", encoding="utf-8", dir=p.parent,
+                prefix=f".{p.name}.", suffix=".tmp", delete=False,
+            ) as temporary:
+                temporary_path = Path(temporary.name)
+                json.dump(self.to_dict(), temporary, ensure_ascii=False, indent=2)
+                temporary.flush()
+                os.fsync(temporary.fileno())
+            # Close the temporary file before replacement, including on Windows.
+            temporary_path.replace(p)
+        finally:
+            if temporary_path is not None:
+                temporary_path.unlink(missing_ok=True)
 
     @classmethod
     def load_checkpoint(cls, path: str | Path) -> WorkflowState:

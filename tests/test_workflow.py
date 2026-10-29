@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
+from igprompts.cli import main
 from igprompts.core import SERIES_FACELESS, SERIES_REELS, get_prompt
 from igprompts.models import PromptDefinition
 from igprompts.providers import CallableProvider, DryRunProvider, ManualProvider
-from igprompts.workflow import WorkflowRunner, WorkflowState
+from igprompts.workflow import STATE_FILE, WorkflowRunner, WorkflowState
 
 
 class TestWorkflow(unittest.TestCase):
@@ -33,6 +37,73 @@ class TestWorkflow(unittest.TestCase):
             loaded = WorkflowState.load_checkpoint(ckpt)
             self.assertEqual(loaded.config["idea"], "Topic A")
             self.assertEqual(loaded.series, SERIES_REELS)
+
+    def _assert_failed_checkpoint_can_resume(self, failure):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            out = Path(tmp_dir) / "workflow with spaces"
+            ckpt = out / STATE_FILE
+            runner = WorkflowRunner(config={"niche": "續跑驗證"})
+            first = runner.run_step(1).output
+            runner.state.save_checkpoint(ckpt)
+            previous = ckpt.read_bytes()
+            runner.run_step(2)
+
+            with failure, self.assertRaisesRegex(OSError, "injected"):
+                runner.state.save_checkpoint(ckpt)
+
+            self.assertEqual(ckpt.read_bytes(), previous)
+            loaded = WorkflowState.load_checkpoint(ckpt)
+            self.assertEqual(loaded.steps[1].output, first)
+            self.assertEqual(loaded.steps[2].status, "pending")
+            self.assertEqual(list(out.iterdir()), [ckpt])
+
+            executed = []
+            execute = DryRunProvider.execute_step
+
+            def track(provider, definition, prompt, state):
+                executed.append(definition.id)
+                return execute(provider, definition, prompt, state)
+
+            with patch.object(DryRunProvider, "execute_step", track), redirect_stdout(io.StringIO()):
+                code = main(["run-pipeline", "--resume", "--provider", "dry-run", "-o", str(out)])
+            self.assertEqual(code, 0)
+            self.assertEqual(executed, [2, 3, 4, 5])
+            resumed = WorkflowState.load_checkpoint(ckpt)
+            self.assertTrue(all(step.status == "completed" for step in resumed.steps.values()))
+            self.assertEqual(resumed.steps[1].output, first)
+
+    def test_checkpoint_partial_write_failure_preserves_state_and_resume(self):
+        real_open = io.open
+
+        def failing_open(*args, **kwargs):
+            stream = real_open(*args, **kwargs)
+            if "w" not in stream.mode:
+                return stream
+            wrapped = MagicMock(wraps=stream)
+            wrapped.__enter__.return_value = wrapped
+            wrapped.__exit__.side_effect = stream.__exit__
+
+            def partial_write(text):
+                stream.write(text[:7])
+                stream.flush()
+                raise OSError("injected partial write failure")
+
+            wrapped.write.side_effect = partial_write
+            return wrapped
+
+        self._assert_failed_checkpoint_can_resume(patch("io.open", side_effect=failing_open))
+
+    def test_checkpoint_replace_failure_preserves_state_and_resume(self):
+        def fail_replace(source, target):
+            self.assertEqual(source.parent.resolve(), target.parent.resolve())
+            self.assertNotEqual(source, target)
+            staged = WorkflowState.load_checkpoint(source)
+            self.assertEqual(staged.steps[2].status, "completed")
+            raise OSError("injected replace failure")
+
+        self._assert_failed_checkpoint_can_resume(
+            patch.object(Path, "replace", autospec=True, side_effect=fail_replace)
+        )
 
     def test_workflow_runner_dry_run_faceless(self):
         config = {

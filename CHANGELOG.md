@@ -6,6 +6,10 @@
 
 ## [Unreleased]
 
+### 修復
+
+- **檢查點原子寫入**：先寫入同目錄暫存檔、flush／fsync 並關閉，再原子替換 JSON；寫入或替換失敗時保留舊檢查點並清理暫存檔。新增部分寫入與替換失敗注入測試，確認舊狀態可解析，且 `--resume` 不重跑已完成步驟。
+
 ### 安全
 
 - **CSV 公式注入防護**：Notion／Airtable／Buffer 匯出的儲存格若以 `=`、`+`、`-`、`@`、Tab、CR 開頭，會加單引號前綴（OWASP 建議做法），純數字（含負數）不受影響。可用 `calendar generate --no-csv-sanitize` 或 `sanitize=False` 關閉。

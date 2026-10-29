@@ -216,6 +216,8 @@ python -m igprompts run-pipeline \
 2. 將 AI 回覆儲存為 `01-niche_ideation.response.md`。
 3. 再次執行 `python -m igprompts run-pipeline --resume --provider manual -o my_work`，流水線即會讀取回覆並自動推進至下一步！
 
+檢查點 `workflow_state.json` 會先寫入同目錄暫存檔，完整寫入並關閉後才原子替換。寫入或替換失敗時保留上次成功儲存的檢查點，清理本次暫存檔並回報錯誤；排除原因後可用 `--resume` 續跑。
+
 ### 3. 命令列管道模式（串接本機 CLI 或自訂 Agent）
 如果你有安裝本地 LLM 或 CLI 工具（例如 Ollama 或自建指令）：
 ```bash

@@ -122,6 +122,8 @@ python -m igprompts run-pipeline \
 2. Save the answer as `01-niche_ideation.response.md`.
 3. Re-run `python -m igprompts run-pipeline --resume --provider manual -o my_work` to proceed to the next step.
 
+The `workflow_state.json` checkpoint is written to a temporary file in the same directory, then atomically replaced only after the write completes and the file is closed. A write or replacement failure preserves the last successfully saved checkpoint, removes the temporary file, and reports the error. Resolve the cause, then continue with `--resume`.
+
 ### 3. Command Pipe Mode (Local LLM / CLI)
 ```bash
 python -m igprompts run-pipeline \

@@ -71,6 +71,16 @@
 - `9a48a6d`：GUI 無設定指令時產生假回答、排程 .bat 路徑未加引號、日曆匯出 ID 重複
 - `18405f4`：CSV 匯出未防公式注入（`=HYPERLINK(...)` 等原樣輸出；主管-3 決定加單引號前綴）
 
+### 3.5 檢查點原子寫入（2026-10-29）
+
+- 基準：`fcf111793c1f95806f788c788e4867322bd08bd0`；Windows 11 原生、Python 3.14.10。
+- 根因：`WorkflowState.save_checkpoint()` 直接覆寫 JSON，部分寫入失敗會截斷原檔。
+- 修正：使用標準庫在同目錄建立唯一暫存檔，寫入後 flush／fsync 並關閉，再以 `Path.replace()` 原子替換；例外向外傳遞，並清理本次暫存檔。
+- 先紅：`python -m unittest discover -s tests -p test_workflow.py -v`，exit code 1，`Ran 8 tests`、`FAILED (failures=2)`。部分寫入測試觀察到原檔遭截斷；替換測試為 `OSError not raised`。
+- 後綠：相同指令，exit code 0，`Ran 8 tests`、`OK`。兩種失敗均驗證原檔位元組不變、舊狀態可解析、無暫存檔殘留；透過 CLI `--resume` 在含空白路徑下只執行步驟 2–5，保留已完成的步驟 1。
+- 完整閘門：`pwsh -File tools/dev_check.ps1`，exit code 0，結尾為 `dev_check: all gates passed`。
+- 範圍：驗證本機寫入與替換失敗；不宣稱已驗證斷電耐久性或 GUI 操作。本輪未查詢 GitHub，路線圖的遠端狀態仍為原快照。
+
 ## 4. 自動化測試與品質閘門驗證 (Verification Evidence)
 
 執行本機標準化品質閘門：
