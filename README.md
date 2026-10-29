@@ -64,7 +64,7 @@
   - `dry-run`：離線驗證，明確標記 `[dry-run]`，絕不捏造假資料。
 - **純本地向量 SVG 圖卡產生器**：零依賴輸出 1080x1350（Instagram 4:5 最佳直式比例）深色主題輪播圖卡集。
 - **7 天測試帳本與復盤閉環**：Prompt 12 規劃測試 -> CSV 帳本填入後台數據 -> 自動計算指標 -> 餵入 Prompt 10 進行診斷與重寫。
-- **演進路線圖與審查報告**：詳見 [ROADMAP.md](ROADMAP.md) 與 [REVIEW.md](REVIEW.md)。
+- **路線圖與審查報告**：後續工作只寫在 [ROADMAP.md](ROADMAP.md)（單一真相源），審查結論見 [REVIEW.md](REVIEW.md)。
 
 ---
 
@@ -96,8 +96,8 @@ ig-growth-prompts/
 ├── README.md                           # 繁體中文說明文件
 ├── README.en.md                        # 英文說明文件
 ├── REVIEW.md                           # 證據式代碼審查報告
-├── ROADMAP.md                          # 自動化工作流演進路線圖
-├── ROADMAP.en.md                       # 英文路線圖
+├── ROADMAP.md                          # 後續工作路線圖（單一真相源）
+├── ROADMAP.en.md                       # 英文說明頁，指向 ROADMAP.md
 ├── SECURITY.md                         # 安全政策與私密漏洞回報機制
 ├── igprompts/                          # 核心 Python 套件 (stdlib-only)
 │   ├── __init__.py

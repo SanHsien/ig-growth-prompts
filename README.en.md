@@ -62,7 +62,7 @@ This repository curates and systematically deconstructs the Instagram growth sys
   - `dry-run`: Deterministic offline verification with explicit markers (no invented fake content).
 - **Headless Vector SVG Carousel Generator**: Pure Python stdlib generator producing 1080x1350 (Instagram 4:5 vertical) dark-mode vector cards.
 - **7-Day Experiment Ledger & Review Loop**: Prompt 12 generates the plan -> CSV ledger records actual stats -> automated metric calculation -> feeds directly into Prompt 10 for diagnostic rewriting.
-- **Clear Evolution Roadmap & Review**: Documented in [ROADMAP.en.md](ROADMAP.en.md) and [REVIEW.md](REVIEW.md).
+- **Roadmap & Review**: next work lives only in [ROADMAP.md](ROADMAP.md) (single source of truth, Traditional Chinese; [English pointer](ROADMAP.en.md)); review notes in [REVIEW.md](REVIEW.md).
 
 
 ---

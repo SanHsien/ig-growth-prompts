@@ -12,7 +12,6 @@
 | 項目 | 為什麼 | 驗收方式 | 建議執行者 | 證據 |
 | --- | --- | --- | --- | --- |
 | 檢查點改為同目錄暫存檔加原子替換 | 目前直接覆寫 JSON，中斷可能破壞續跑狀態 | 加入寫入／替換失敗注入測試，失敗後舊狀態仍能解析並以 `--resume` 續跑；`pwsh -File tools/dev_check.ps1` 通過 | Codex | `igprompts/workflow.py:77`；深掃報告（2026-10-26）〈刻意不修〉 |
-| 把英文路線圖對照頁與本檔對齊 | `ROADMAP.en.md` 仍是舊的 Phase 版，開頭寫「English／中文版」語言切換並連到 ROADMAP.md；`README.md:99` 仍把 ROADMAP 描述成「自動化工作流演進路線圖」，`README.md:100`、`README.en.md:29,65,249` 也指向英文舊版，與本檔互相矛盾 | `ROADMAP.en.md` 改成本檔的英文對照，或改成只連到 ROADMAP.md 的短頁；同步改 `README.md:67,99-100,350`、`README.en.md:29,65,249` 的描述；兩份 README 不再把 ROADMAP 描述成演進史，`python tools/check_links.py` 通過 | Claude Haiku | `ROADMAP.en.md:1-5`、`README.md:99-100` |
 | 補 Windows GUI 正常操作驗收 | 深掃未開視窗，尚不能代表桌面使用路徑已實測 | 在 Windows 原生 GUI 以單一測試主題走 manual 回覆、續跑、日曆匯出及含空白路徑的排程腳本；記錄結果與 SHA，不呼叫遠端 API | 維護者 | 深掃報告（2026-10-26）範圍說明；`REVIEW.md:71`；`README.md`〈桌面 GUI 工作台〉 |
 
 ## 中期：等條件成立再做
